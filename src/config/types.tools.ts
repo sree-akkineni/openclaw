@@ -365,6 +365,16 @@ export type ToolsConfig = {
         inlineCitations?: boolean;
       };
     };
+    x?: {
+      /** Enable X/Twitter search (default: true when bearer token present). */
+      enabled?: boolean;
+      /** X API v2 bearer token (defaults to X_BEARER_TOKEN env var). */
+      bearerToken?: string;
+      /** Timeout in seconds (default: 15). */
+      timeoutSeconds?: number;
+      /** Cache TTL in minutes (default: 5). */
+      cacheTtlMinutes?: number;
+    };
     fetch?: {
       /** Enable web fetch tool (default: true). */
       enabled?: boolean;

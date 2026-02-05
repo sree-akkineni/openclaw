@@ -296,6 +296,11 @@
       "title": "Web Fetch",
       "detailKeys": ["url", "extractMode", "maxChars"]
     },
+    "x_search": {
+      "emoji": "𝕏",
+      "title": "X Search",
+      "detailKeys": ["query", "count", "sort_order"]
+    },
     "whatsapp_login": {
       "emoji": "🟢",
       "title": "WhatsApp Login",
