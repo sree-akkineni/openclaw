@@ -23,6 +23,9 @@ export const DEFAULT_TOOL_ALLOW = [
   "sessions_send",
   "sessions_spawn",
   "session_status",
+  "web_search",
+  "web_fetch",
+  "x_search",
 ] as const;
 
 // Provider docking: keep sandbox policy aligned with provider tool names.
