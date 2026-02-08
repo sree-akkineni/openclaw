@@ -35,7 +35,7 @@ ENV NODE_ENV=production
 RUN chown -R node:node /app
 
 # Install Himalaya email CLI (newsletter processing via himalaya skill)
-RUN curl -sL https://github.com/pimalaya/himalaya/releases/latest/download/himalaya.linux.x86_64.tar.gz \
+RUN curl -sL https://github.com/pimalaya/himalaya/releases/download/v1.1.0/himalaya.x86_64-linux.tgz \
     | tar xz -C /usr/local/bin/ && chmod +x /usr/local/bin/himalaya
 
 # Install uv (Python package manager, required by nano-banana-pro + nano-pdf skills)
