@@ -28,7 +28,10 @@ import {
   PortInUseError,
 } from "./infra/ports.js";
 import { assertSupportedRuntime } from "./infra/runtime-guard.js";
-import { installUnhandledRejectionHandler } from "./infra/unhandled-rejections.js";
+import {
+  installUnhandledRejectionHandler,
+  isTransientNetworkError,
+} from "./infra/unhandled-rejections.js";
 import { enableConsoleCapture } from "./logging.js";
 import { runCommandWithTimeout, runExec } from "./process/exec.js";
 import { assertWebChannel, normalizeE164, toWhatsappJid } from "./utils.js";
@@ -92,6 +95,12 @@ if (isMain) {
       /set(Servername|Session)/.test(error.message)
     ) {
       console.warn("[openclaw] Suppressed TLS socket race condition:", error.message);
+      return;
+    }
+    // Transient network errors (ENETUNREACH, ECONNRESET, etc.) shouldn't crash the
+    // gateway — they're temporary connectivity blips that resolve on their own.
+    if (isTransientNetworkError(error)) {
+      console.warn("[openclaw] Suppressed transient network error:", formatUncaughtError(error));
       return;
     }
     console.error("[openclaw] Uncaught exception:", formatUncaughtError(error));
