@@ -82,6 +82,18 @@ if (isMain) {
   installUnhandledRejectionHandler();
 
   process.on("uncaughtException", (error) => {
+    // TLS race condition in undici + Node 22: setServername/setSession called on
+    // a destroyed socket. The prototype guard in tls-socket-guard.ts handles this,
+    // but if it somehow slips through, suppress rather than crash.
+    if (
+      error instanceof TypeError &&
+      error.stack?.includes("_tls_wrap") &&
+      /\bnull\b/.test(error.message) &&
+      /set(Servername|Session)/.test(error.message)
+    ) {
+      console.warn("[openclaw] Suppressed TLS socket race condition:", error.message);
+      return;
+    }
     console.error("[openclaw] Uncaught exception:", formatUncaughtError(error));
     process.exit(1);
   });

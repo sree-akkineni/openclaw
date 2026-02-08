@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import "./infra/tls-socket-guard.js";
 import { spawn } from "node:child_process";
 import path from "node:path";
 import process from "node:process";
