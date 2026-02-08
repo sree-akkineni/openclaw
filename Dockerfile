@@ -34,6 +34,17 @@ ENV NODE_ENV=production
 # Allow non-root user to write temp files during runtime/tests.
 RUN chown -R node:node /app
 
+# Install Himalaya email CLI (newsletter processing via himalaya skill)
+RUN curl -sL https://github.com/pimalaya/himalaya/releases/latest/download/himalaya.linux.x86_64.tar.gz \
+    | tar xz -C /usr/local/bin/ && chmod +x /usr/local/bin/himalaya
+
+# Install uv (Python package manager, required by nano-banana-pro + nano-pdf skills)
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.local/bin:${PATH}"
+
+# Install summarize CLI (URL/YouTube/podcast summarization skill)
+RUN npm i -g @steipete/summarize
+
 # Security hardening: Run as non-root user
 # The node:22-bookworm image includes a 'node' user (uid 1000)
 # This reduces the attack surface by preventing container escape via root privileges
