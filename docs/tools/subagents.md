@@ -24,6 +24,13 @@ The simplest way to use sub-agents is to ask your agent naturally:
 
 The agent will call the `sessions_spawn` tool behind the scenes. When the sub-agent finishes, it announces its findings back into your chat.
 
+If you are running a one person operation and want a concrete eval workflow, use
+[Solo evals with helper agents](/experiments/research/solo-evals-helper-agent).
+
+Cost note: each sub-agent has its **own** context and token usage. For heavy or repetitive
+tasks, set a cheaper model for sub-agents and keep your main agent on a higher-quality model.
+You can configure this via `agents.defaults.subagents.model` or per-agent overrides.
+
 You can also be explicit about options:
 
 > "Spawn a sub-agent to analyze the server logs from today. Use gpt-5.2 and set a 5-minute timeout."

@@ -556,6 +556,10 @@
       "destination": "/experiments/research/memory"
     },
     {
+      "source": "/research/solo-evals-helper-agent",
+      "destination": "/experiments/research/solo-evals-helper-agent"
+    },
+    {
       "source": "/rpc",
       "destination": "/reference/rpc"
     },
@@ -1258,7 +1262,13 @@
               },
               {
                 "group": "Environment and debugging",
-                "pages": ["help/environment", "help/debugging", "help/testing", "help/scripts"]
+                "pages": [
+                  "help/environment",
+                  "help/debugging",
+                  "help/testing",
+                  "experiments/research/solo-evals-helper-agent",
+                  "help/scripts"
+                ]
               },
               {
                 "group": "Node runtime",

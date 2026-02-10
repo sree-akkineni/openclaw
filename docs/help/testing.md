@@ -344,6 +344,9 @@ We already have a few CI-safe tests that behave like “agent reliability evals�
 
 - Mock tool-calling through the real gateway + agent loop (`src/gateway/gateway.tool-calling.mock-openai.test.ts`).
 - End-to-end wizard flows that validate session wiring and config effects (`src/gateway/gateway.wizard.e2e.test.ts`).
+- Research loop deterministic evals (ordering, isolation, workflow contracts): `src/agents/tools/research-loop.eval.test.ts`.
+- Research loop stress workload fixture validation: `src/agents/tools/research-loop.stress.test.ts`.
+- Research loop quality and delegation signals (analysis score, needs_review queue, spawn advice): `src/agents/tools/research-loop-tool.test.ts`.
 
 What’s still missing for skills (see [Skills](/tools/skills)):
 
@@ -356,6 +359,26 @@ Future evals should stay deterministic first:
 - A scenario runner using mock providers to assert tool calls + order, skill file reads, and session wiring.
 - A small suite of skill-focused scenarios (use vs avoid, gating, prompt injection).
 - Optional live evals (opt-in, env-gated) only after the CI-safe suite is in place.
+
+Research loop eval commands:
+
+- Deterministic evals (CI-safe):
+  - `pnpm test src/agents/tools/research-loop.eval.test.ts`
+  - `pnpm test src/agents/tools/research-loop.stress.test.ts`
+- Optional live smoke (env-gated):
+  - `OPENCLAW_LIVE_RESEARCH_LOOP=1 pnpm test:live src/agents/tools/research-loop.live.test.ts`
+
+### Research loop eval guardrails and common footguns
+
+- Run `.live.test.ts` files with `pnpm test:live ...`; default `pnpm test` excludes live suites.
+- Set env vars that affect state/config paths (for example `OPENCLAW_STATE_DIR`) before loading modules under test.
+- Verify Node runtime first (`node -v`): baseline is Node `22+`, and older versions can hide compatibility issues.
+- Keep deterministic evals offline and hermetic: no real providers, no profile credentials, and no dependency on local `~/.openclaw` state.
+- Use test-local temp directories for state and fixtures; clean up after each test to avoid cross-test pollution.
+- Treat `~/.openclaw/research/loops.json` as latest-state storage only, not historical event logging.
+- `research_loop` does not auto-spawn subagents; if your scenario needs delegation, assert explicit `sessions_spawn` behavior.
+- When adding a new eval, document the command and expected failure signal here so operators know what “broken” looks like.
+- Solo operator workflow reference: [Solo evals with helper agents](/experiments/research/solo-evals-helper-agent).
 
 ## Adding regressions (guidance)
 

@@ -37,7 +37,9 @@ openclaw agents add <name>
 <Tip>
 Recommended: set up a Brave Search API key so the agent can use `web_search`
 (`web_fetch` works without a key). Easiest path: `openclaw configure --section web`
-which stores `tools.web.search.apiKey`. Docs: [Web tools](/tools/web).
+which stores `tools.web.search.apiKey`.
+Optional: add `tools.web.x.bearerToken` (or `X_BEARER_TOKEN`) to enable `x_search`.
+Docs: [Web tools](/tools/web).
 </Tip>
 
 ## QuickStart vs Advanced

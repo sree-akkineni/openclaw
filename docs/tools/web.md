@@ -1,17 +1,19 @@
 ---
-summary: "Web search + fetch tools (Brave Search API, Perplexity direct/OpenRouter)"
+summary: "Web search + fetch tools (Brave, Perplexity, and X recent search)"
 read_when:
-  - You want to enable web_search or web_fetch
+  - You want to enable web_search, x_search, or web_fetch
   - You need Brave Search API key setup
   - You want to use Perplexity Sonar for web search
+  - You need X API bearer token setup
 title: "Web Tools"
 ---
 
 # Web tools
 
-OpenClaw ships two lightweight web tools:
+OpenClaw ships three lightweight web tools:
 
 - `web_search` — Search the web via Brave Search API (default) or Perplexity Sonar (direct or via OpenRouter).
+- `x_search` — Search recent posts on X/Twitter.
 - `web_fetch` — HTTP fetch + readable extraction (HTML → markdown/text).
 
 These are **not** browser automation. For JS-heavy sites or logins, use the
@@ -22,6 +24,7 @@ These are **not** browser automation. For JS-heavy sites or logins, use the
 - `web_search` calls your configured provider and returns results.
   - **Brave** (default): returns structured results (title, URL, snippet).
   - **Perplexity**: returns AI-synthesized answers with citations from real-time web search.
+- `x_search` calls X API v2 recent search and returns post text, author, timestamp, and engagement metrics.
 - Results are cached by query for 15 minutes (configurable).
 - `web_fetch` does a plain HTTP GET and extracts readable content
   (HTML → markdown/text). It does **not** execute JavaScript.
@@ -149,6 +152,7 @@ Search the web using your configured provider.
 - API key for your chosen provider:
   - **Brave**: `BRAVE_API_KEY` or `tools.web.search.apiKey`
   - **Perplexity**: `OPENROUTER_API_KEY`, `PERPLEXITY_API_KEY`, or `tools.web.search.perplexity.apiKey`
+- If the Brave key is missing, `web_search` returns a short setup hint with a docs link.
 
 ### Config
 
@@ -257,5 +261,38 @@ Notes:
 - `web_fetch` is best-effort extraction; some sites will need the browser tool.
 - See [Firecrawl](/tools/firecrawl) for key setup and service details.
 - Responses are cached (default 15 minutes) to reduce repeated fetches.
-- If you use tool profiles/allowlists, add `web_search`/`web_fetch` or `group:web`.
-- If the Brave key is missing, `web_search` returns a short setup hint with a docs link.
+- If you use tool profiles/allowlists, add `web_search`/`x_search`/`web_fetch` or `group:web`.
+
+## x_search
+
+Search recent posts on X/Twitter.
+
+### x_search requirements
+
+- `tools.web.x.enabled` must not be `false` (default: enabled when token is present)
+- X API bearer token:
+  - `X_BEARER_TOKEN` (environment), or
+  - `tools.web.x.bearerToken` (config)
+
+### x_search config
+
+```json5
+{
+  tools: {
+    web: {
+      x: {
+        enabled: true,
+        bearerToken: "X_BEARER_TOKEN_HERE", // optional if X_BEARER_TOKEN is set
+        timeoutSeconds: 15,
+        cacheTtlMinutes: 5,
+      },
+    },
+  },
+}
+```
+
+### x_search tool parameters
+
+- `query` (required)
+- `count` (10–100; default 10)
+- `sort_order` (`recency` | `relevancy`; default `recency`)

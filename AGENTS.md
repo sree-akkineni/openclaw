@@ -85,6 +85,12 @@
 - Do not set test workers above 16; tried already.
 - Live tests (real keys): `CLAWDBOT_LIVE_TEST=1 pnpm test:live` (OpenClaw-only) or `LIVE=1 pnpm test:live` (includes provider live tests). Docker: `pnpm test:docker:live-models`, `pnpm test:docker:live-gateway`. Onboarding Docker E2E: `pnpm test:docker:onboard`.
 - Full kit + what’s covered: `docs/testing.md`.
+- Research-loop eval guardrails:
+  - `.live.test.ts` files are not part of default `pnpm test`; run them with `pnpm test:live ...` and the required env gate (`OPENCLAW_LIVE_RESEARCH_LOOP=1`).
+  - Export state/test env vars (for example `OPENCLAW_STATE_DIR`) before importing tools/modules that cache paths at module load.
+  - Check runtime first: OpenClaw baseline is Node `22+`; don’t trust eval outcomes from older Node versions.
+  - `~/.openclaw/research/loops.json` is a state snapshot, not an append-only event log; use additional logging if you need history/audit trails.
+  - `research_loop` tracks workflow and quality signals, but does not auto-spawn workers; delegation is explicit via `sessions_spawn`/orchestrator policy.
 - Pure test additions/fixes generally do **not** need a changelog entry unless they alter user-facing behavior or the user asks for one.
 - Mobile: before using a simulator, check for connected real devices (iOS + Android) and prefer them when available.
 

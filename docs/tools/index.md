@@ -144,7 +144,7 @@ Available groups:
 
 - `group:runtime`: `exec`, `bash`, `process`
 - `group:fs`: `read`, `write`, `edit`, `apply_patch`
-- `group:sessions`: `sessions_list`, `sessions_history`, `sessions_send`, `sessions_spawn`, `session_status`
+- `group:sessions`: `sessions_list`, `sessions_history`, `sessions_send`, `sessions_spawn`, `research_loop`, `session_status`
 - `group:memory`: `memory_search`, `memory_get`
 - `group:web`: `web_search`, `web_fetch`
 - `group:ui`: `browser`, `canvas`
@@ -257,6 +257,23 @@ Notes:
 - For JS-heavy sites, prefer the browser tool.
 - See [Web tools](/tools/web) for setup.
 - See [Firecrawl](/tools/firecrawl) for the optional anti-bot fallback.
+
+### `x_search`
+
+Search recent posts on X/Twitter.
+
+Core parameters:
+
+- `query` (required)
+- `count` (10–100; default 10)
+- `sort_order` (`recency` | `relevancy`)
+
+Notes:
+
+- Requires an X API bearer token (set `X_BEARER_TOKEN` or `tools.web.x.bearerToken`).
+- Enable via `tools.web.x.enabled`.
+- Responses are cached (default 5 min).
+- See [Web tools](/tools/web) for setup.
 
 ### `browser`
 
@@ -425,7 +442,7 @@ Notes:
 - Use `delayMs` (defaults to 2000) to avoid interrupting an in-flight reply.
 - `restart` is disabled by default; enable with `commands.restart: true`.
 
-### `sessions_list` / `sessions_history` / `sessions_send` / `sessions_spawn` / `session_status`
+### `sessions_list` / `sessions_history` / `sessions_send` / `sessions_spawn` / `research_loop` / `session_status`
 
 List sessions, inspect transcript history, or send to another session.
 
@@ -435,6 +452,7 @@ Core parameters:
 - `sessions_history`: `sessionKey` (or `sessionId`), `limit?`, `includeTools?`
 - `sessions_send`: `sessionKey` (or `sessionId`), `message`, `timeoutSeconds?` (0 = fire-and-forget)
 - `sessions_spawn`: `task`, `label?`, `agentId?`, `model?`, `runTimeoutSeconds?`, `cleanup?`
+- `research_loop`: `action` (`start|checkpoint|continue|status|list|close`) plus action-specific fields (`topic`, `loopId`, `summary`, `recommendation`, `proposedTasks`, `importance`, `urgency`, `confidence`, `evidenceQuality`, `citationLinks`, `counterpoints`, `whyNow`, `state`, `view`, `staleHours`, `limit`)
 - `session_status`: `sessionKey?` (default current; accepts `sessionId`), `model?` (`default` clears override)
 
 Notes:
@@ -445,6 +463,10 @@ Notes:
 - Delivery/announce happens after completion and is best-effort; `status: "ok"` confirms the agent run finished, not that the announce was delivered.
 - `sessions_spawn` starts a sub-agent run and posts an announce reply back to the requester chat.
 - `sessions_spawn` is non-blocking and returns `status: "accepted"` immediately.
+- `research_loop` keeps a persistent multi-round research state so the agent can checkpoint, critique, score analysis quality, and only continue when explicitly resumed.
+- `research_loop checkpoint` returns deterministic `spawnAdvice` to indicate when a sub-agent handoff is warranted.
+- `research_loop list` supports triage views: `needs_decision`, `needs_review`, `hot`, and `stale` to reduce queue overload.
+- For a concrete one person operating model, see [Solo evals with helper agents](/experiments/research/solo-evals-helper-agent).
 - `sessions_send` runs a reply‑back ping‑pong (reply `REPLY_SKIP` to stop; max turns via `session.agentToAgent.maxPingPongTurns`, 0–5).
 - After the ping‑pong, the target agent runs an **announce step**; reply `ANNOUNCE_SKIP` to suppress the announcement.
 
