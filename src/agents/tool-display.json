@@ -301,6 +301,18 @@
       "title": "X Search",
       "detailKeys": ["query", "count", "sort_order"]
     },
+    "research_loop": {
+      "emoji": "🔬",
+      "title": "Research",
+      "actions": {
+        "start": { "label": "start", "detailKeys": ["topic", "priority", "maxRounds"] },
+        "checkpoint": { "label": "checkpoint", "detailKeys": ["loopId", "recommendation"] },
+        "continue": { "label": "continue", "detailKeys": ["loopId"] },
+        "status": { "label": "status", "detailKeys": ["loopId"] },
+        "list": { "label": "list", "detailKeys": ["view", "state"] },
+        "close": { "label": "close", "detailKeys": ["loopId", "reason"] }
+      }
+    },
     "whatsapp_login": {
       "emoji": "🟢",
       "title": "WhatsApp Login",

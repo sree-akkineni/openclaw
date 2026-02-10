@@ -11,6 +11,7 @@ import {
   sanitizeToolResult,
 } from "./pi-embedded-subscribe.tools.js";
 import { inferToolMetaFromArgs } from "./pi-embedded-utils.js";
+import { formatResearchLoopNotification } from "./research-loop-notify.js";
 import { normalizeToolName } from "./tool-policy.js";
 
 function extendExecMeta(toolName: string, args: unknown, meta?: string): string | undefined {
@@ -219,6 +220,18 @@ export function handleToolExecutionEnd(
   ctx.log.debug(
     `embedded run tool end: runId=${ctx.params.runId} tool=${toolName} toolCallId=${toolCallId}`,
   );
+
+  // Research loop progress notifications — always sent, regardless of verbose level.
+  if (toolName === "research_loop" && ctx.params.onToolResult && !isToolError) {
+    const notification = formatResearchLoopNotification(sanitizedResult);
+    if (notification) {
+      try {
+        void ctx.params.onToolResult({ text: notification });
+      } catch {
+        /* ignore notification delivery failures */
+      }
+    }
+  }
 
   if (ctx.params.onToolResult && ctx.shouldEmitToolOutput()) {
     const outputText = extractToolResultText(sanitizedResult);
