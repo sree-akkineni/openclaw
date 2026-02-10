@@ -40,7 +40,9 @@ describe("block streaming", () => {
   });
 
   async function waitForCalls(fn: () => number, calls: number) {
-    const deadline = Date.now() + 5000;
+    // Full-suite runs can heavily load workers before this test reaches run-start typing.
+    // Keep this timeout generous to avoid false negatives from scheduler latency.
+    const deadline = Date.now() + 15_000;
     while (fn() < calls) {
       if (Date.now() > deadline) {
         throw new Error(`Expected ${calls} call(s), got ${fn()}`);
