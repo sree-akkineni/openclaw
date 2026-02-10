@@ -1254,7 +1254,12 @@
             "groups": [
               {
                 "group": "Help",
-                "pages": ["help/index", "help/troubleshooting", "help/faq"]
+                "pages": [
+                  "help/index",
+                  "help/troubleshooting",
+                  "help/faq",
+                  "help/fork-customizations"
+                ]
               },
               {
                 "group": "Community",
