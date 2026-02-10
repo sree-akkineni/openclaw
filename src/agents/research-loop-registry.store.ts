@@ -330,7 +330,7 @@ export function loadResearchLoopRegistryFromDisk(): Map<string, ResearchLoopReco
         };
         return normalized;
       }),
-      decisions: decisions as ResearchLoopDecisionRecord[],
+      decisions,
     });
   }
   return out;
@@ -393,7 +393,9 @@ async function withResearchLoopRegistryLock<T>(
         throw error;
       }
       if (Date.now() - startedAt > timeoutMs) {
-        throw new Error(`timeout acquiring research loop registry lock: ${lockPath}`);
+        throw new Error(`timeout acquiring research loop registry lock: ${lockPath}`, {
+          cause: error,
+        });
       }
       try {
         const st = await fs.promises.stat(lockPath);

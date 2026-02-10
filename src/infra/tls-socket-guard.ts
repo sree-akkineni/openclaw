@@ -15,17 +15,19 @@
 import tls from "node:tls";
 
 const TLS_METHODS = ["setServername", "setSession"] as const;
+const tlsSocketPrototype = tls.TLSSocket.prototype as unknown as Record<string, unknown>;
 
 for (const method of TLS_METHODS) {
-  const original = tls.TLSSocket.prototype[method] as ((...args: unknown[]) => unknown) | undefined;
-  if (!original) continue;
+  const original = tlsSocketPrototype[method];
+  if (typeof original !== "function") {
+    continue;
+  }
+  const originalMethod = original as (...args: unknown[]) => unknown;
 
-  (tls.TLSSocket.prototype as Record<string, unknown>)[method] = function (
-    this: tls.TLSSocket,
-    ...args: unknown[]
-  ) {
-    // biome-ignore lint/suspicious/noExplicitAny: accessing internal Node field
-    if (!(this as any)._handle) return;
-    return original.apply(this, args);
+  tlsSocketPrototype[method] = function (this: tls.TLSSocket, ...args: unknown[]) {
+    if (!(this as unknown as { _handle?: unknown })._handle) {
+      return;
+    }
+    return originalMethod.apply(this, args);
   };
 }
