@@ -138,6 +138,13 @@ describe("external-content security", () => {
       expect(result).toContain("Source: Web Search");
     });
 
+    it("supports X search source labels", () => {
+      const result = wrapWebContent("Post snippet", "x_search");
+
+      expect(result).toContain("Source: X Search");
+      expect(result).not.toContain("SECURITY NOTICE");
+    });
+
     it("adds warnings for web fetch content", () => {
       const result = wrapWebContent("Full page content", "web_fetch");
 

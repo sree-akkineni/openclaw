@@ -22,6 +22,7 @@ export const DEFAULT_TOOL_ALLOW = [
   "sessions_history",
   "sessions_send",
   "sessions_spawn",
+  "research_loop",
   "session_status",
   "web_search",
   "web_fetch",

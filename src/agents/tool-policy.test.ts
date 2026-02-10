@@ -24,6 +24,9 @@ describe("tool-policy", () => {
     const group = TOOL_GROUPS["group:openclaw"];
     expect(group).toContain("browser");
     expect(group).toContain("message");
+    expect(group).toContain("research_loop");
     expect(group).toContain("session_status");
+    const sessions = TOOL_GROUPS["group:sessions"];
+    expect(sessions).toContain("research_loop");
   });
 });

@@ -94,7 +94,9 @@ async function promptWebToolsConfig(
 ): Promise<OpenClawConfig> {
   const existingSearch = nextConfig.tools?.web?.search;
   const existingFetch = nextConfig.tools?.web?.fetch;
+  const existingX = nextConfig.tools?.web?.x;
   const hasSearchKey = Boolean(existingSearch?.apiKey);
+  const hasXToken = Boolean(existingX?.bearerToken);
 
   note(
     [
@@ -156,6 +158,53 @@ async function promptWebToolsConfig(
     enabled: enableFetch,
   };
 
+  note(
+    [
+      "X search lets your agent query recent posts on X/Twitter using the `x_search` tool.",
+      "It requires an X API bearer token (you can store it in config or set X_BEARER_TOKEN in the Gateway environment).",
+      "Docs: https://docs.openclaw.ai/tools/web",
+    ].join("\n"),
+    "X search",
+  );
+
+  const enableXSearch = guardCancel(
+    await confirm({
+      message: "Enable x_search (X/Twitter recent search)?",
+      initialValue: existingX?.enabled ?? hasXToken,
+    }),
+    runtime,
+  );
+
+  let nextX = {
+    ...existingX,
+    enabled: enableXSearch,
+  };
+
+  if (enableXSearch) {
+    const tokenInput = guardCancel(
+      await text({
+        message: hasXToken
+          ? "X bearer token (leave blank to keep current or use X_BEARER_TOKEN)"
+          : "X bearer token (paste it here; leave blank to use X_BEARER_TOKEN)",
+        placeholder: hasXToken ? "Leave blank to keep current" : "AAAA...",
+      }),
+      runtime,
+    );
+    const token = String(tokenInput ?? "").trim();
+    if (token) {
+      nextX = { ...nextX, bearerToken: token };
+    } else if (!hasXToken) {
+      note(
+        [
+          "No token stored yet, so x_search will stay unavailable.",
+          "Store a token here or set X_BEARER_TOKEN in the Gateway environment.",
+          "Docs: https://docs.openclaw.ai/tools/web",
+        ].join("\n"),
+        "X search",
+      );
+    }
+  }
+
   return {
     ...nextConfig,
     tools: {
@@ -164,6 +213,7 @@ async function promptWebToolsConfig(
         ...nextConfig.tools?.web,
         search: nextSearch,
         fetch: nextFetch,
+        x: nextX,
       },
     },
   };

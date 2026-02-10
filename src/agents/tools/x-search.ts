@@ -1,7 +1,7 @@
 import { Type } from "@sinclair/typebox";
-
 import type { OpenClawConfig } from "../../config/config.js";
 import type { AnyAgentTool } from "./common.js";
+import { wrapWebContent } from "../../security/external-content.js";
 import { jsonResult, readNumberParam, readStringParam } from "./common.js";
 import {
   CacheEntry,
@@ -166,7 +166,7 @@ async function runXSearch(params: {
     const user = tweet.author_id ? userMap.get(tweet.author_id) : undefined;
     return {
       id: tweet.id,
-      text: tweet.text,
+      text: wrapWebContent(tweet.text, "x_search"),
       author: user
         ? { name: user.name, username: user.username }
         : { name: "unknown", username: "unknown" },

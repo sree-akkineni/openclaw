@@ -39,8 +39,8 @@ RUN curl -sL https://github.com/pimalaya/himalaya/releases/download/v1.1.0/himal
     | tar xz -C /usr/local/bin/ && chmod +x /usr/local/bin/himalaya
 
 # Install uv (Python package manager, required by nano-banana-pro + nano-pdf skills)
-RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.local/bin:${PATH}"
+# Install into /usr/local/bin so it remains available after switching to USER node.
+RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR=/usr/local/bin sh
 
 # Install summarize CLI (URL/YouTube/podcast summarization skill)
 RUN npm i -g @steipete/summarize

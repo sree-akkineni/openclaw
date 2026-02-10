@@ -69,6 +69,7 @@ export type ExternalContentSource =
   | "api"
   | "channel_metadata"
   | "web_search"
+  | "x_search"
   | "web_fetch"
   | "unknown";
 
@@ -78,6 +79,7 @@ const EXTERNAL_SOURCE_LABELS: Record<ExternalContentSource, string> = {
   api: "API",
   channel_metadata: "Channel metadata",
   web_search: "Web Search",
+  x_search: "X Search",
   web_fetch: "Web Fetch",
   unknown: "External",
 };
@@ -274,7 +276,7 @@ export function getHookType(sessionKey: string): ExternalContentSource {
  */
 export function wrapWebContent(
   content: string,
-  source: "web_search" | "web_fetch" = "web_search",
+  source: "web_search" | "x_search" | "web_fetch" = "web_search",
 ): string {
   const includeWarning = source === "web_fetch";
   // Marker sanitization happens in wrapExternalContent

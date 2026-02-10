@@ -263,6 +263,7 @@ describe("createOpenClawCodingTools", () => {
       "sessions_history",
       "sessions_send",
       "sessions_spawn",
+      "research_loop",
       "session_status",
       "image",
     ]);
@@ -322,6 +323,7 @@ describe("createOpenClawCodingTools", () => {
     expect(names.has("sessions_history")).toBe(false);
     expect(names.has("sessions_send")).toBe(false);
     expect(names.has("sessions_spawn")).toBe(false);
+    expect(names.has("research_loop")).toBe(false);
 
     expect(names.has("read")).toBe(true);
     expect(names.has("exec")).toBe(true);
@@ -354,6 +356,7 @@ describe("createOpenClawCodingTools", () => {
     expect(names.has("message")).toBe(true);
     expect(names.has("sessions_send")).toBe(true);
     expect(names.has("sessions_spawn")).toBe(false);
+    expect(names.has("research_loop")).toBe(false);
     expect(names.has("exec")).toBe(false);
     expect(names.has("browser")).toBe(false);
   });

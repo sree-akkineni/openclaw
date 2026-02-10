@@ -240,6 +240,7 @@ export function buildAgentSystemPrompt(params: {
     sessions_history: "Fetch history for another session/sub-agent",
     sessions_send: "Send a message to another session/sub-agent",
     sessions_spawn: "Spawn a sub-agent session",
+    research_loop: "Track multi-round research checkpoints and gated continuation",
     session_status:
       "Show a /status-equivalent status card (usage + time + Reasoning/Verbose/Elevated); use for model-use questions (📊 session_status); optional per-session model override",
     image: "Analyze an image with the configured image model",
@@ -267,6 +268,7 @@ export function buildAgentSystemPrompt(params: {
     "sessions_list",
     "sessions_history",
     "sessions_send",
+    "research_loop",
     "session_status",
     "image",
   ];
@@ -400,6 +402,7 @@ export function buildAgentSystemPrompt(params: {
           "- sessions_list: list sessions",
           "- sessions_history: fetch session history",
           "- sessions_send: send to another session",
+          "- research_loop: manage multi-round research checkpoints",
           '- session_status: show usage/time/model state and answer "what model are we using?"',
         ].join("\n"),
     "TOOLS.md does not control tool availability; it is user guidance for how to use external tools.",
