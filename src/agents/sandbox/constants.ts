@@ -23,6 +23,7 @@ export const DEFAULT_TOOL_ALLOW = [
   "sessions_send",
   "sessions_spawn",
   "research_loop",
+  "subagents",
   "session_status",
   "web_search",
   "web_fetch",
