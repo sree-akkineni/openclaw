@@ -1,0 +1,99 @@
+{
+  // Clawops baseline: admin-capable with guarded autonomy.
+  "gateway": {
+    "mode": "local",
+    "reload": { "mode": "hybrid", "debounceMs": 300 }
+  },
+
+  "update": {
+    "channel": "stable",
+    "checkOnStart": true,
+    "auto": {
+      "enabled": false,
+      "stableDelayHours": 6,
+      "stableJitterHours": 12,
+      "betaCheckIntervalHours": 1
+    }
+  },
+
+  "agents": {
+    "defaults": {
+      "heartbeat": {
+        "every": "30m",
+        "target": "none"
+      }
+    }
+  },
+
+  "acp": {
+    "enabled": true,
+    "backend": "acpx",
+    "dispatch": { "enabled": true },
+    "runtime": {
+      "ttlMinutes": 240
+    }
+  },
+
+  "tools": {
+    // Must remain gateway + full/off for clawops operational ownership.
+    "exec": {
+      "host": "gateway",
+      "security": "full",
+      "ask": "off",
+      "timeoutSec": 1800,
+      "backgroundMs": 1000,
+      "notifyOnExit": true,
+      "notifyOnExitEmptySuccess": false
+    },
+
+    // Keep cron enabled for release and hygiene automation.
+    "deny": []
+  },
+
+  "session": {
+    "threadBindings": {
+      "enabled": true,
+      "spawnAcpSessions": true,
+      "idleHours": 48,
+      "maxAgeHours": 168
+    }
+  },
+
+  "channels": {
+    "telegram": {
+      "enabled": true,
+      "threadBindings": {
+        "enabled": true,
+        "spawnAcpSessions": true
+      },
+      "execApprovals": {
+        "enabled": true,
+        "mode": "dm",
+        "approvers": ["REPLACE_WITH_TELEGRAM_USER_ID"]
+      },
+      "dmPolicy": "allow",
+      "allowFrom": ["REPLACE_WITH_TELEGRAM_USER_ID"]
+    }
+  },
+
+  // Persistent Codex ACP context binding for clawops.
+  "bindings": [
+    {
+      "type": "acp",
+      "agentId": "codex",
+      "match": {
+        "channel": "telegram",
+        "accountId": "default",
+        "peer": {
+          "kind": "group",
+          "id": "REPLACE_WITH_CHAT_OR_TOPIC_ID"
+        }
+      },
+      "acp": {
+        "backend": "acpx",
+        "mode": "persistent",
+        "label": "clawops-codex-ops"
+      }
+    }
+  ]
+}

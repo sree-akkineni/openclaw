@@ -1,0 +1,8 @@
+[Unit]
+Description=Clawops Weekly Hygiene
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/sudo -n /usr/bin/docker exec clawops-gateway sh -lc "set -e; set -a; [ -f /opt/clawops/.env ] && . /opt/clawops/.env; set +a; /opt/clawops/scripts/weekly-hygiene.sh"

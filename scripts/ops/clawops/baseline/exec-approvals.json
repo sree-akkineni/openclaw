@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "defaults": {
+    "security": "full",
+    "ask": "off",
+    "askFallback": "allowlist",
+    "autoAllowSkills": false
+  },
+  "agents": {
+    "*": {
+      "security": "full",
+      "ask": "off",
+      "askFallback": "allowlist",
+      "autoAllowSkills": false,
+      "allowlist": []
+    },
+    "main": {
+      "security": "full",
+      "ask": "off",
+      "askFallback": "allowlist",
+      "autoAllowSkills": false,
+      "allowlist": []
+    },
+    "codex": {
+      "security": "full",
+      "ask": "off",
+      "askFallback": "allowlist",
+      "autoAllowSkills": false,
+      "allowlist": []
+    }
+  }
+}
