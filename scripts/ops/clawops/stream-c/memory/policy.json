@@ -1,0 +1,69 @@
+{
+  "version": "2026-04-05",
+  "memoryTiers": ["global-shared", "group-shared", "person-private"],
+  "default": {
+    "crossSurfaceInfluence": "deny",
+    "sameSurfaceSummaries": "allow",
+    "qmdRawIngest": "deny"
+  },
+  "states": ["proposed", "approved", "rejected", "expired"],
+  "redactionBoundaries": {
+    "mustRemove": ["email", "phone", "credentials", "payment-card", "exact-quote-over-200-chars"],
+    "mustMask": ["person-handle", "ticket-id", "internal-hostname"]
+  },
+  "consentPolicy": {
+    "groupToDm": "explicit-opt-in-only",
+    "dmToGroup": "explicit-opt-in-only",
+    "globalPromotion": "operator-approved-or-public-fact"
+  },
+  "rules": [
+    {
+      "id": "global-to-group-default-deny",
+      "from": "global-shared",
+      "to": "group-shared",
+      "allow": false,
+      "requireConsentBasis": true,
+      "requireRedaction": true
+    },
+    {
+      "id": "global-to-dm-default-deny",
+      "from": "global-shared",
+      "to": "person-private",
+      "allow": false,
+      "requireConsentBasis": true,
+      "requireRedaction": true
+    },
+    {
+      "id": "group-to-dm-default-deny",
+      "from": "group-shared",
+      "to": "person-private",
+      "allow": false,
+      "requireConsentBasis": true,
+      "requireRedaction": true
+    },
+    {
+      "id": "dm-to-group-default-deny",
+      "from": "person-private",
+      "to": "group-shared",
+      "allow": false,
+      "requireConsentBasis": true,
+      "requireRedaction": true
+    },
+    {
+      "id": "group-to-global-review-gate",
+      "from": "group-shared",
+      "to": "global-shared",
+      "allow": false,
+      "requireConsentBasis": true,
+      "requireRedaction": true
+    },
+    {
+      "id": "dm-to-global-review-gate",
+      "from": "person-private",
+      "to": "global-shared",
+      "allow": false,
+      "requireConsentBasis": true,
+      "requireRedaction": true
+    }
+  ]
+}

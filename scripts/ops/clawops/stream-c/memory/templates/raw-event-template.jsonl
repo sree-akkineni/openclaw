@@ -1,0 +1,1 @@
+{"event_id":"evt-0001","timestamp":"2026-04-03T10:00:00Z","surface":"group","channel":"telegram","context_key":"telegram:-1001234567890:42","actor":"operator","text":"Release smoke passed for canary","entities":["canary","smoke-suite"],"labels":["update"],"confidence":0.85}

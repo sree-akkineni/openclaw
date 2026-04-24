@@ -1,0 +1,21 @@
+{
+  "memory_id": "mem-6e93e7cd3188",
+  "schema_version": "stream-c-v1",
+  "domain": "global-shared",
+  "scope": "global",
+  "context_key": "ops:release-intel",
+  "source": {
+    "note_path": "global/ops-release-intel-5ec31d95/2026-05-15--carryover-co-group-to-global-0001.md",
+    "raw_files": ["carryover/approved/co-group-to-global-0001.json"]
+  },
+  "confidence": 0.8,
+  "ttl_days": 41,
+  "retention_until": "2026-05-15",
+  "artifact_type": "carryover",
+  "sensitivity": ["internal"],
+  "provenance": {
+    "source_file": "carryover/approved/co-group-to-global-0001.json",
+    "artifact_id": "co-group-to-global-0001"
+  },
+  "text": "Global carryover: canary posture Ops group confirmed canary smoke green for OpenClaw 2026.4.1. Auto-promotion remains disabled pending stable weekly hygiene trend."
+}

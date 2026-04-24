@@ -1,0 +1,21 @@
+{
+  "memory_id": "mem-830bb0836b7a",
+  "schema_version": "stream-c-v1",
+  "domain": "person-private",
+  "scope": "dm",
+  "context_key": "telegram:99887766",
+  "source": {
+    "note_path": "dm/telegram-99887766-74db8f74/2026-04-03--summary.md",
+    "raw_files": ["raw/dm/telegram-99887766/2026-04-03.jsonl"]
+  },
+  "confidence": 0.94,
+  "ttl_days": 30,
+  "retention_until": "2026-05-03",
+  "artifact_type": "summary",
+  "sensitivity": ["private"],
+  "provenance": {
+    "source_file": "raw/dm/telegram-99887766/2026-04-03.jsonl",
+    "artifact_id": "mem-830bb0836b7a"
+  },
+  "text": "Personal note: prefers concise release digests with one-line rollback status. Question: can DM memory stay isolated from group chatter unless I opt in?"
+}

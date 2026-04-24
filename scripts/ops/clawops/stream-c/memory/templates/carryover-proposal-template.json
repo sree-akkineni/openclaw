@@ -1,0 +1,26 @@
+{
+  "artifact_id": "co-0001",
+  "source": {
+    "domain": "group-shared",
+    "context_key": "telegram:group-id"
+  },
+  "target": {
+    "domain": "person-private",
+    "context_key": "telegram:user-id"
+  },
+  "state": "proposed",
+  "consent_basis": "required",
+  "redaction": {
+    "applied": true,
+    "labels": ["pii", "secrets"]
+  },
+  "retention_until": "2026-05-04",
+  "provenance": {
+    "summary_ids": [],
+    "event_range": ""
+  },
+  "payload": {
+    "title": "",
+    "bullets": []
+  }
+}

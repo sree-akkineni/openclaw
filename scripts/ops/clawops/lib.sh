@@ -12,6 +12,14 @@ CLAWOPS_NOTIFY_CHANNEL="${CLAWOPS_NOTIFY_CHANNEL:-telegram}"
 CLAWOPS_NOTIFY_TARGET="${CLAWOPS_NOTIFY_TARGET:-}"
 CLAWOPS_NOTIFY_ACCOUNT="${CLAWOPS_NOTIFY_ACCOUNT:-}"
 CLAWOPS_NOTIFY_PREFIX="${CLAWOPS_NOTIFY_PREFIX:-[clawops]}"
+CLAWOPS_NOTIFY_MODE="${CLAWOPS_NOTIFY_MODE:-message}"
+CLAWOPS_NOTIFY_AGENT_ID="${CLAWOPS_NOTIFY_AGENT_ID:-codex}"
+CLAWOPS_NOTIFY_SESSION_KEY="${CLAWOPS_NOTIFY_SESSION_KEY:-}"
+CLAWOPS_NOTIFY_AGENT_TIMEOUT_MS="${CLAWOPS_NOTIFY_AGENT_TIMEOUT_MS:-120000}"
+
+CLAWOPS_WEBHOOK_URL="${CLAWOPS_WEBHOOK_URL:-}"
+CLAWOPS_WEBHOOK_TOKEN="${CLAWOPS_WEBHOOK_TOKEN:-}"
+CLAWOPS_WEBHOOK_TIMEOUT_SEC="${CLAWOPS_WEBHOOK_TIMEOUT_SEC:-10}"
 
 CLAWOPS_MIN_AVAILABLE_MB="${CLAWOPS_MIN_AVAILABLE_MB:-350}"
 CLAWOPS_MAX_SWAP_USED_MB="${CLAWOPS_MAX_SWAP_USED_MB:-1536}"
@@ -69,20 +77,85 @@ notify_operator() {
   local body="$CLAWOPS_NOTIFY_PREFIX $text"
   log_line "$body"
 
-  if command -v openclaw >/dev/null 2>&1 && [[ -n "$CLAWOPS_NOTIFY_TARGET" ]]; then
-    if [[ -n "$CLAWOPS_NOTIFY_ACCOUNT" ]]; then
-      openclaw message send \
-        --channel "$CLAWOPS_NOTIFY_CHANNEL" \
-        --account "$CLAWOPS_NOTIFY_ACCOUNT" \
-        --target "$CLAWOPS_NOTIFY_TARGET" \
-        --message "$body" >/dev/null 2>&1 || true
-    else
-      openclaw message send \
-        --channel "$CLAWOPS_NOTIFY_CHANNEL" \
-        --target "$CLAWOPS_NOTIFY_TARGET" \
-        --message "$body" >/dev/null 2>&1 || true
+  if command -v openclaw >/dev/null 2>&1; then
+    local sent=0
+    if [[ "$CLAWOPS_NOTIFY_MODE" == "session" || -n "$CLAWOPS_NOTIFY_SESSION_KEY" ]]; then
+      if [[ -n "$CLAWOPS_NOTIFY_SESSION_KEY" ]] && command -v jq >/dev/null 2>&1; then
+        local params
+        local idempotency_key
+        idempotency_key="clawops-notify-$(date +%s)-$RANDOM"
+        params="$(jq -cn \
+          --arg agentId "$CLAWOPS_NOTIFY_AGENT_ID" \
+          --arg sessionKey "$CLAWOPS_NOTIFY_SESSION_KEY" \
+          --arg message "$body" \
+          --arg idempotencyKey "$idempotency_key" \
+          '{agentId:$agentId,sessionKey:$sessionKey,message:$message,idempotencyKey:$idempotencyKey}')"
+        if openclaw gateway call agent \
+          --expect-final \
+          --timeout "$CLAWOPS_NOTIFY_AGENT_TIMEOUT_MS" \
+          --params "$params" \
+          --json >/dev/null 2>&1; then
+          sent=1
+        else
+          log_line "WARN session-targeted notify failed; falling back to direct message send"
+        fi
+      else
+        log_line "WARN notify session mode requested but CLAWOPS_NOTIFY_SESSION_KEY or jq is missing"
+      fi
+    fi
+
+    if (( sent == 0 )) && [[ -n "$CLAWOPS_NOTIFY_TARGET" ]]; then
+      if [[ -n "$CLAWOPS_NOTIFY_ACCOUNT" ]]; then
+        openclaw message send \
+          --channel "$CLAWOPS_NOTIFY_CHANNEL" \
+          --account "$CLAWOPS_NOTIFY_ACCOUNT" \
+          --target "$CLAWOPS_NOTIFY_TARGET" \
+          --message "$body" >/dev/null 2>&1 || true
+      else
+        openclaw message send \
+          --channel "$CLAWOPS_NOTIFY_CHANNEL" \
+          --target "$CLAWOPS_NOTIFY_TARGET" \
+          --message "$body" >/dev/null 2>&1 || true
+      fi
     fi
   fi
+}
+
+emit_webhook_event() {
+  local event="$1"
+  local status="$2"
+  local details="${3:-}"
+
+  if [[ -z "$CLAWOPS_WEBHOOK_URL" ]]; then
+    return 0
+  fi
+  if ! command -v curl >/dev/null 2>&1; then
+    log_line "WARN webhook event skipped (curl not found)"
+    return 1
+  fi
+
+  local payload
+  if command -v jq >/dev/null 2>&1; then
+    payload="$(jq -cn \
+      --arg ts "$(utc_now)" \
+      --arg event "$event" \
+      --arg status "$status" \
+      --arg details "$details" \
+      '{ts:$ts,event:$event,status:$status,details:$details}')"
+  else
+    payload="{\"ts\":\"$(utc_now)\",\"event\":\"$event\",\"status\":\"$status\",\"details\":\"$details\"}"
+  fi
+
+  local -a headers=("-H" "Content-Type: application/json")
+  if [[ -n "$CLAWOPS_WEBHOOK_TOKEN" ]]; then
+    headers+=("-H" "Authorization: Bearer $CLAWOPS_WEBHOOK_TOKEN")
+  fi
+
+  if ! curl -fsS --max-time "$CLAWOPS_WEBHOOK_TIMEOUT_SEC" "${headers[@]}" -d "$payload" "$CLAWOPS_WEBHOOK_URL" >/dev/null; then
+    log_line "WARN webhook event failed: event=$event status=$status"
+    return 1
+  fi
+  return 0
 }
 
 create_runtime_snapshot() {
@@ -194,7 +267,7 @@ release_watch_state_file() {
 
 release_watch_state_defaults_json() {
   cat <<'JSON'
-{"version":1,"lastSeenVersion":null,"lastSeenAt":null,"lastAlertedVersion":null,"lastAlertedAt":null,"lastCanaryVersion":null,"lastCanaryStatus":null,"lastDigestDate":null}
+{"version":1,"lastSeenVersion":null,"lastSeenAt":null,"lastAlertedVersion":null,"lastAlertedAt":null,"lastCanaryVersion":null,"lastCanaryStatus":null,"lastCanaryAt":null,"lastPromotionStatus":null,"lastPromotionAt":null,"promotionPaused":false,"promotionPausedAt":null,"promotionPauseReason":null,"lastDigestDate":null}
 JSON
 }
 

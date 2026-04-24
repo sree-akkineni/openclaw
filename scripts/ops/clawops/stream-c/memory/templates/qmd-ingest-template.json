@@ -1,0 +1,21 @@
+{
+  "memory_id": "mem-0001",
+  "schema_version": "stream-c-v1",
+  "domain": "group-shared",
+  "scope": "group",
+  "context_key": "telegram:group-id",
+  "source": {
+    "note_path": "",
+    "raw_files": []
+  },
+  "confidence": 0.8,
+  "ttl_days": 14,
+  "retention_until": "2026-04-30",
+  "artifact_type": "summary",
+  "sensitivity": ["internal"],
+  "provenance": {
+    "source_file": "",
+    "artifact_id": ""
+  },
+  "text": ""
+}

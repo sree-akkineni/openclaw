@@ -1,0 +1,5 @@
+channel:user
+telegram:123456789
+slack:T12345:U67890
+discord:user123
+

@@ -46,6 +46,23 @@ check_eq() {
   fi
 }
 
+check_in_set() {
+  local key="$1"
+  shift
+  local -a allowed=("$@")
+  local got
+  got="$(openclaw config get "$key" 2>/dev/null | norm || true)"
+  local item
+  for item in "${allowed[@]}"; do
+    if [[ "$got" == "$item" ]]; then
+      log_line "OK $key=$got"
+      return 0
+    fi
+  done
+  log_line "ERROR config mismatch $key expected one of=[${allowed[*]}] got=${got:-<empty>}"
+  failures=1
+}
+
 if [[ -f "$CLAWOPS_LOCKFILE" ]]; then
   if ! baseline_lock_verify "$CLAWOPS_LOCKFILE"; then
     failures=1
@@ -69,6 +86,9 @@ if command -v openclaw >/dev/null 2>&1; then
   check_eq "tools.exec.security" "full"
   check_eq "tools.exec.ask" "off"
   check_eq "acp.enabled" "true"
+  check_eq "session.threadBindings.enabled" "true"
+  check_eq "channels.telegram.execApprovals.enabled" "true"
+  check_in_set "channels.telegram.execApprovals.target" "channel" "both"
 
   deny="$(openclaw config get tools.deny 2>/dev/null | tr -d '[:space:]' || true)"
   if [[ "$deny" == *"cron"* ]]; then
@@ -87,6 +107,36 @@ if command -v openclaw >/dev/null 2>&1; then
   fi
 else
   log_line "WARN openclaw CLI not found; skipping live config checks"
+fi
+
+env_has_key() {
+  local key="$1"
+  if [[ -n "${!key:-}" ]]; then
+    return 0
+  fi
+  if [[ -f "$HOME/.openclaw/.env" ]] && grep -q "^${key}=" "$HOME/.openclaw/.env"; then
+    return 0
+  fi
+  return 1
+}
+
+notify_mode="${CLAWOPS_NOTIFY_MODE:-message}"
+if [[ "$notify_mode" == "session" ]]; then
+  if env_has_key "CLAWOPS_NOTIFY_SESSION_KEY"; then
+    log_line "OK notify session key present for cron session targeting"
+  else
+    log_line "ERROR CLAWOPS_NOTIFY_MODE=session but CLAWOPS_NOTIFY_SESSION_KEY is missing"
+    failures=1
+  fi
+fi
+
+if env_has_key "CLAWOPS_WEBHOOK_URL"; then
+  if command -v curl >/dev/null 2>&1; then
+    log_line "OK webhook trigger mode prerequisites present (CLAWOPS_WEBHOOK_URL + curl)"
+  else
+    log_line "ERROR CLAWOPS_WEBHOOK_URL set but curl is missing"
+    failures=1
+  fi
 fi
 
 required_secrets="${CLAWOPS_REQUIRED_SECRETS-NOTION_API_KEY,HIMALAYA_PASSWORD,GMAIL_APP_PASSWORD}"

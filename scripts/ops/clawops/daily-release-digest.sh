@@ -21,6 +21,9 @@ if [[ -z "$latest_version" ]]; then
 fi
 
 canary_status="$(jq -r '.lastCanaryStatus // "unknown"' "$STATE_FILE")"
+promotion_status="$(jq -r '.lastPromotionStatus // "unknown"' "$STATE_FILE")"
+promotion_paused="$(jq -r '.promotionPaused // false' "$STATE_FILE")"
+promotion_pause_reason="$(jq -r '.promotionPauseReason // empty' "$STATE_FILE")"
 
 tmp_md="$(mktemp /tmp/clawops-changelog-XXXXXX)"
 tmp_section="$(mktemp /tmp/clawops-changelog-section-XXXXXX)"
@@ -95,6 +98,11 @@ summary_file="$(mktemp /tmp/clawops-digest-XXXXXX)"
   printf 'OpenClaw daily release digest (%s)\n' "$(date -u +%Y-%m-%d)"
   printf 'latest seen version: %s\n' "$latest_version"
   printf 'canary status: %s\n' "$canary_status"
+  printf 'promotion status: %s\n' "$promotion_status"
+  printf 'promotion paused: %s\n' "$promotion_paused"
+  if [[ "$promotion_paused" == "true" && -n "$promotion_pause_reason" ]]; then
+    printf 'promotion pause reason: %s\n' "$promotion_pause_reason"
+  fi
   printf '\n'
   printf 'Workflow highlights:\n'
   pick_category "gateway/channels" 'gateway|channel|telegram|discord|whatsapp|slack|signal|matrix|msteams|zalo|feishu|imessage|routing'
@@ -105,7 +113,7 @@ summary_file="$(mktemp /tmp/clawops-digest-XXXXXX)"
 } >"$summary_file"
 
 notify_operator "$(cat "$summary_file")"
-append_event "daily-release-digest" "ok" "version=$latest_version canary=$canary_status"
+append_event "daily-release-digest" "ok" "version=$latest_version canary=$canary_status promotion=$promotion_status paused=$promotion_paused"
 
 now_date="$(date -u +%Y-%m-%d)"
 state_update_json_locked \

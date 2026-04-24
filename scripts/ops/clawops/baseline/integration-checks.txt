@@ -1,0 +1,11 @@
+# Integration checks contract for scripts/ops/clawops/integration-suite.sh
+# Format:
+#   scope|name|command
+#
+# Each command runs through `bash -lc` and should exit non-zero on failure.
+# Keep names short and stable because they are used in digest event keys.
+#
+# Examples:
+# mcp|registry-list|openclaw mcp list --json >/dev/null
+# api|gateway-rpc|openclaw gateway status --require-rpc >/dev/null
+# function|notion-search|openclaw gateway call tool --params '{"name":"notion.search","arguments":{"query":"smoke"}}' --json >/dev/null

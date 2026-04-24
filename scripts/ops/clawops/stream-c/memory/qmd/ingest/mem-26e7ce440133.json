@@ -1,0 +1,21 @@
+{
+  "memory_id": "mem-26e7ce440133",
+  "schema_version": "stream-c-v1",
+  "domain": "group-shared",
+  "scope": "group",
+  "context_key": "telegram:-100777000111:17",
+  "source": {
+    "note_path": "groups/telegram-100777000111-17-a0c5df77/2026-04-03--summary.md",
+    "raw_files": ["raw/groups/telegram-100777000111-topic-17/2026-04-03.jsonl"]
+  },
+  "confidence": 0.85,
+  "ttl_days": 14,
+  "retention_until": "2026-04-17",
+  "artifact_type": "summary",
+  "sensitivity": ["internal"],
+  "provenance": {
+    "source_file": "raw/groups/telegram-100777000111-topic-17/2026-04-03.jsonl",
+    "artifact_id": "mem-26e7ce440133"
+  },
+  "text": "Canary smoke is green for OpenClaw 2026.4.1 in the ops group. Decision: keep auto-promotion off until weekly hygiene stays stable. Open question: should we increase digest frequency for release anomalies?"
+}

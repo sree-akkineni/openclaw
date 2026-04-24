@@ -53,7 +53,6 @@
   "session": {
     "threadBindings": {
       "enabled": true,
-      "spawnAcpSessions": true,
       "idleHours": 48,
       "maxAgeHours": 168
     }
@@ -68,7 +67,7 @@
       },
       "execApprovals": {
         "enabled": true,
-        "mode": "dm",
+        "target": "channel",
         "approvers": ["REPLACE_WITH_TELEGRAM_USER_ID"]
       },
       "dmPolicy": "allow",

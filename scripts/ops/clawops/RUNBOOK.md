@@ -6,6 +6,8 @@ Companion docs:
 
 - `README.md` for package scope and env variable reference.
 - `HANDOFF-2026-04-03.md` for latest recovery snapshot and parallel workstream prompts.
+- `channel-strategy.md` for Shibot channel default and fallback runbook.
+- `stream-c/README.md` for group-vs-DM memory architecture plan.
 
 ## Scope
 
@@ -73,13 +75,28 @@ sudo -n docker exec clawops-gateway sh -lc 'set -a; [ -f /opt/clawops/.env ] && 
 
 Acceptance:
 
+- `canary-preflight` is `ok`.
 - `canary-update-dry-run` is `ok`.
 - `canary-update-apply` is `ok`.
 - `smoke-suite` is `ok`.
+- `integration-suite` is `ok` for each configured smoke target.
 - `canary-pipeline` is `ok`.
 - `release-watch.json` has:
   - `lastCanaryVersion` set to target version.
   - `lastCanaryStatus: "ok"`.
+
+Forced-failure rollback and promotion pause validation:
+
+```bash
+sudo -n docker exec clawops-gateway sh -lc 'set -a; [ -f /opt/clawops/.env ] && . /opt/clawops/.env; set +a; \
+  CLAWOPS_PROMOTE_ON_GREEN=1 \
+  CLAWOPS_PROD_PROMOTE_CMD="echo promote-ok" \
+  CLAWOPS_PROD_SMOKE_CMD="false" \
+  CLAWOPS_PROD_ROLLBACK_CMD="echo rollback-ok" \
+  /opt/clawops/scripts/canary-promote.sh || true; \
+  cat "$HOME/.openclaw/clawops/state/release-watch.json"; \
+  test -f "$HOME/.openclaw/clawops/state/promotion-paused" && echo pause-file-present'
+```
 
 ## Incident Ladder (Self-Heal Before Reboot)
 
@@ -127,6 +144,51 @@ Include integration-critical keys (example):
 - `SHIBOT_NOTION_API_KEY`
 - `HIMALAYA_PASSWORD`
 - `GMAIL_APP_PASSWORD`
+
+Integration harness one-shot:
+
+```bash
+sudo -n docker exec clawops-gateway sh -lc 'set -a; [ -f /opt/clawops/.env ] && . /opt/clawops/.env; set +a; /opt/clawops/scripts/integration-suite.sh --target manual'
+```
+
+Recommended `.env` additions:
+
+- `CLAWOPS_INTEGRATION_CHECKS_FILE=/opt/clawops/config/integration-checks.txt`
+- `CLAWOPS_INTEGRATION_REQUIRE_CHECKS=1`
+
+Checks file contract:
+
+- One check per line: `scope|name|command`
+- Example scopes: `mcp`, `api`, `function`
+- `weekly-hygiene.sh` and `smoke-suite.sh` both execute this harness
+
+## Webhook Trigger Mode
+
+Webhook/manual release trigger:
+
+```bash
+sudo -n docker exec clawops-gateway sh -lc 'set -a; [ -f /opt/clawops/.env ] && . /opt/clawops/.env; set +a; /opt/clawops/scripts/release-watch-trigger.sh --version 2026.4.1'
+```
+
+Webhook with payload file:
+
+```bash
+sudo -n docker exec clawops-gateway sh -lc 'set -a; [ -f /opt/clawops/.env ] && . /opt/clawops/.env; set +a; /opt/clawops/scripts/release-watch-trigger.sh --payload-file /tmp/release-event.json --force-canary'
+```
+
+Cron session targeting (optional):
+
+- Set `CLAWOPS_NOTIFY_MODE=session`
+- Set `CLAWOPS_NOTIFY_AGENT_ID` and `CLAWOPS_NOTIFY_SESSION_KEY`
+- Keep `CLAWOPS_NOTIFY_TARGET` configured for fallback DM delivery if session messaging fails
+
+## Multi-container Browser/PDF Smoke Matrix
+
+Run one suite across local + container targets (configured via `CLAWOPS_TARGET_<NAME>_*` env keys):
+
+```bash
+sudo -n docker exec clawops-gateway sh -lc 'set -a; [ -f /opt/clawops/.env ] && . /opt/clawops/.env; set +a; CLAWOPS_SMOKE_TARGETS=clawops,remy,gumnut,shibot /opt/clawops/scripts/smoke-suite.sh'
+```
 
 ## Promotion Policy
 

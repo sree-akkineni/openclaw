@@ -8,6 +8,8 @@ source "$SCRIPT_DIR/lib.sh"
 CANARY_DRY_RUN_CMD="${CLAWOPS_CANARY_UPDATE_DRY_RUN_CMD:-openclaw update --dry-run}"
 CANARY_APPLY_CMD="${CLAWOPS_CANARY_UPDATE_APPLY_CMD:-openclaw update --yes}"
 CANARY_ROLLBACK_CMD="${CLAWOPS_CANARY_ROLLBACK_CMD:-}"
+CANARY_PREFLIGHT_ENABLED="${CLAWOPS_CANARY_PREFLIGHT_ENABLED:-1}"
+CANARY_PREFLIGHT_CMD="${CLAWOPS_CANARY_PREFLIGHT_CMD:-$SCRIPT_DIR/validate-runtime.sh}"
 PROMOTE_ON_GREEN="${CLAWOPS_PROMOTE_ON_GREEN:-0}"
 PROD_PROMOTE_CMD="${CLAWOPS_PROD_PROMOTE_CMD:-}"
 PROD_ROLLBACK_CMD="${CLAWOPS_PROD_ROLLBACK_CMD:-}"
@@ -53,6 +55,35 @@ update_canary_state() {
     --arg v "$version" \
     --arg s "$status" \
     --arg now "$now"
+}
+
+update_promotion_state() {
+  local status="$1"
+  local paused="$2"
+  local reason="${3:-}"
+  local now
+
+  if ! command -v jq >/dev/null 2>&1; then
+    return 0
+  fi
+
+  init_clawops_layout
+  ensure_release_state_file
+  now="$(utc_now)"
+  state_update_json_locked \
+    "$STATE_FILE" \
+    "release-watch-state" \
+    '. + {lastPromotionStatus:$s,lastPromotionAt:$now,promotionPaused:$paused,promotionPausedAt:(if $paused then $now else null end),promotionPauseReason:(if $paused then $reason else null end)}' \
+    --arg s "$status" \
+    --arg now "$now" \
+    --arg reason "$reason" \
+    --argjson paused "$paused"
+}
+
+pause_promotion() {
+  local reason="$1"
+  printf '%s %s\n' "$(utc_now)" "$reason" >"$PROMOTION_PAUSE_FILE"
+  update_promotion_state "paused" true "$reason"
 }
 
 run_cmd() {
@@ -101,6 +132,8 @@ if ! command -v openclaw >/dev/null 2>&1; then
 fi
 
 main() {
+  local current_version
+
   if is_memory_pressure; then
     mark_heavy_pause "canary-promote-memory-pressure"
     notify_operator "canary pipeline paused due to memory pressure"
@@ -111,14 +144,30 @@ main() {
 
   clear_heavy_pause
 
+  current_version="$(current_openclaw_version)"
+  if [[ -z "$current_version" ]]; then
+    current_version="unknown"
+  fi
+
+  if [[ "$CANARY_PREFLIGHT_ENABLED" == "1" ]]; then
+    if [[ -z "$CANARY_PREFLIGHT_CMD" ]]; then
+      log_line "ERROR preflight enabled but CLAWOPS_CANARY_PREFLIGHT_CMD is empty"
+      update_canary_state "error" "$current_version"
+      return 1
+    fi
+    if ! run_cmd "canary-preflight" "$CANARY_PREFLIGHT_CMD"; then
+      notify_operator "canary preflight failed; update aborted"
+      append_event "canary-pipeline" "error" "preflight-failed"
+      update_canary_state "error" "$current_version"
+      return 1
+    fi
+  fi
+
   snapshot_id="$(create_runtime_snapshot "pre-canary-update")"
   append_event "canary-pipeline" "ok" "snapshot=$snapshot_id"
   "$SCRIPT_DIR/secrets-recover.sh" --backup-only || true
 
-  prev_version="$(current_openclaw_version)"
-  if [[ -z "$prev_version" ]]; then
-    prev_version="unknown"
-  fi
+  prev_version="$current_version"
 
   if ! run_cmd "canary-update-dry-run" "$CANARY_DRY_RUN_CMD"; then
     notify_operator "canary dry-run failed"
@@ -155,43 +204,49 @@ main() {
 
   if [[ "$PROMOTE_ON_GREEN" != "1" ]]; then
     append_event "promotion" "skipped" "PROMOTE_ON_GREEN=$PROMOTE_ON_GREEN"
+    update_promotion_state "skipped" false ""
     return 0
   fi
 
   if [[ -f "$PROMOTION_PAUSE_FILE" ]]; then
     append_event "promotion" "blocked" "promotion paused ($PROMOTION_PAUSE_FILE)"
     notify_operator "promotion blocked: pause file present ($PROMOTION_PAUSE_FILE)"
+    update_promotion_state "blocked" true "pause file present"
     return 1
   fi
 
   if [[ -z "$PROD_PROMOTE_CMD" ]]; then
     notify_operator "promotion blocked: PROD promote command is not configured"
     append_event "promotion" "error" "missing CLAWOPS_PROD_PROMOTE_CMD"
+    update_promotion_state "error" false "missing CLAWOPS_PROD_PROMOTE_CMD"
     return 1
   fi
 
   if [[ -z "$PROD_ROLLBACK_CMD" ]]; then
     notify_operator "promotion blocked: PROD rollback command is not configured"
     append_event "promotion" "error" "missing CLAWOPS_PROD_ROLLBACK_CMD"
+    update_promotion_state "error" false "missing CLAWOPS_PROD_ROLLBACK_CMD"
     return 1
   fi
 
   if ! run_cmd "prod-promote" "$PROD_PROMOTE_CMD"; then
     notify_operator "production promote command failed"
     append_event "promotion" "error" "promote command failed"
+    update_promotion_state "error" false "promote command failed"
     return 1
   fi
 
   if ! run_cmd "prod-smoke" "$PROD_SMOKE_CMD"; then
     notify_operator "production smoke failed after promote"
     run_cmd "prod-rollback" "$PROD_ROLLBACK_CMD" || true
-    printf '%s\n' "$(utc_now) prod-smoke-failed" >"$PROMOTION_PAUSE_FILE"
+    pause_promotion "prod-smoke-failed"
     append_event "promotion" "error" "prod smoke failed; rollback attempted; promotion paused"
     return 1
   fi
 
   append_event "promotion" "ok" "production promotion and smoke passed"
   notify_operator "production promotion completed successfully"
+  update_promotion_state "ok" false ""
 }
 
 if with_lock "canary-pipeline" main; then

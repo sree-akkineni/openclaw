@@ -1,0 +1,5 @@
+channel:group[:topic]
+telegram:-1001234567890:42
+slack:T12345:C67890
+discord:guild123:thread456
+

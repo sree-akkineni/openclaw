@@ -1,0 +1,21 @@
+{
+  "memory_id": "mem-d31209dd7c44",
+  "schema_version": "stream-c-v1",
+  "domain": "global-shared",
+  "scope": "global",
+  "context_key": "ops:release-intel",
+  "source": {
+    "note_path": "global/ops-release-intel-5ec31d95/2026-04-03--summary.md",
+    "raw_files": ["raw/global/ops-control-plane/2026-04-03.jsonl"]
+  },
+  "confidence": 0.86,
+  "ttl_days": 60,
+  "retention_until": "2026-06-02",
+  "artifact_type": "summary",
+  "sensitivity": ["internal"],
+  "provenance": {
+    "source_file": "raw/global/ops-control-plane/2026-04-03.jsonl",
+    "artifact_id": "mem-d31209dd7c44"
+  },
+  "text": "Global fact: release watcher, daily digest, and weekly hygiene are all enabled. Decision: treat Stream C memory as markdown-first with deterministic lint checks."
+}

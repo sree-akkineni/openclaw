@@ -1,0 +1,29 @@
+{
+  "artifact_id": "co-group-to-global-0001",
+  "source": {
+    "domain": "group-shared",
+    "context_key": "telegram:-100777000111:17"
+  },
+  "target": {
+    "domain": "global-shared",
+    "context_key": "ops:release-intel"
+  },
+  "state": "approved",
+  "consent_basis": "operator_policy_approved",
+  "redaction": {
+    "applied": true,
+    "labels": ["pii", "secrets"]
+  },
+  "retention_until": "2026-05-15",
+  "provenance": {
+    "summary_ids": ["mem-26e7ce440133"],
+    "event_range": "2026-04-03T13:05:00Z..2026-04-03T13:25:00Z"
+  },
+  "payload": {
+    "title": "Global carryover: canary posture",
+    "bullets": [
+      "Ops group confirmed canary smoke green for OpenClaw 2026.4.1.",
+      "Auto-promotion remains disabled pending stable weekly hygiene trend."
+    ]
+  }
+}
