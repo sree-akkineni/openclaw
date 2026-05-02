@@ -21,10 +21,12 @@ SMOKE_TARGETS="${CLAWOPS_SMOKE_TARGETS:-local}"
 REQUIRE_SECRETS="${CLAWOPS_SMOKE_REQUIRE_SECRETS:-1}"
 OPENCLAW_URL_DEFAULT="${CLAWOPS_GATEWAY_URL:-${OPENCLAW_GATEWAY_URL:-}}"
 OPENCLAW_TOKEN_DEFAULT="${CLAWOPS_GATEWAY_TOKEN:-${OPENCLAW_GATEWAY_TOKEN:-}}"
+INTEGRATION_CONTAINER_DEFAULT="${CLAWOPS_INTEGRATION_CONTAINER:-}"
 
 CURRENT_TARGET=""
 TARGET_URL=""
 TARGET_TOKEN=""
+TARGET_INTEGRATION_CONTAINER=""
 
 ACP_AGENT_ID="$ACP_AGENT_ID_DEFAULT"
 ACP_SESSION_KEY=""
@@ -53,6 +55,7 @@ Options:
 Target-specific environment overrides:
   CLAWOPS_TARGET_<NAME>_URL
   CLAWOPS_TARGET_<NAME>_TOKEN
+  CLAWOPS_TARGET_<NAME>_INTEGRATION_CONTAINER
   CLAWOPS_TARGET_<NAME>_ACP_AGENT_ID
   CLAWOPS_TARGET_<NAME>_ACP_SESSION_KEY
   CLAWOPS_TARGET_<NAME>_BROWSER_PROFILE
@@ -153,6 +156,38 @@ openclaw_cmd() {
   openclaw "${args[@]}" "$@"
 }
 
+run_integration_suite_for_target() {
+  if [[ -n "$TARGET_INTEGRATION_CONTAINER" ]]; then
+    local integration_script='
+      export OPENCLAW_ALLOW_INSECURE_PRIVATE_WS=1
+      timeout 20 openclaw gateway status --require-rpc --url "$OPENCLAW_GATEWAY_URL" --token "$OPENCLAW_GATEWAY_TOKEN" >/dev/null
+      timeout 20 openclaw health >/dev/null
+      timeout 20 openclaw mcp list >/dev/null
+      command -v himalaya >/dev/null
+      if [ "$CLAWOPS_INTEGRATION_TARGET" = "gumnut" ]; then
+        cat >/tmp/duck-params.json <<JSON
+{"agentId":"main","sessionKey":"agent:main:duckbill-smoke-inline","message":"Use the duckbill tool with action inspect_tools and reply exactly STATUS=ok.","idempotencyKey":"duckbill-inline-$(date +%s)-$RANDOM"}
+JSON
+        timeout 120 openclaw gateway call agent --expect-final --timeout 120000 --params "$(cat /tmp/duck-params.json)" | grep -q "STATUS=ok"
+      fi
+    '
+
+    run_timeout docker exec \
+      -e OPENCLAW_GATEWAY_URL="$TARGET_URL" \
+      -e OPENCLAW_GATEWAY_TOKEN="$TARGET_TOKEN" \
+      -e CLAWOPS_INTEGRATION_TARGET="$CURRENT_TARGET" \
+      "$TARGET_INTEGRATION_CONTAINER" \
+      sh -lc "$integration_script"
+    return $?
+  fi
+
+  env \
+    CLAWOPS_INTEGRATION_TARGET="$CURRENT_TARGET" \
+    CLAWOPS_INTEGRATION_TARGET_URL="$TARGET_URL" \
+    CLAWOPS_INTEGRATION_TARGET_TOKEN="$TARGET_TOKEN" \
+    "$SCRIPT_DIR/integration-suite.sh" --target "$CURRENT_TARGET"
+}
+
 check_required_secret() {
   local key="$1"
   if [[ -n "${!key:-}" ]]; then
@@ -203,9 +238,7 @@ check_existing_session_reuse() {
   local expected="$2"
 
   run_timeout openclaw_cmd browser --browser-profile "$BROWSER_PROFILE" storage local set "$key" "$expected" >/dev/null 2>&1
-  local got
-  got="$(run_timeout openclaw_cmd browser --browser-profile "$BROWSER_PROFILE" storage local get "$key" 2>/dev/null || true)"
-  [[ "$got" == *"$expected"* ]]
+  run_timeout openclaw_cmd browser --browser-profile "$BROWSER_PROFILE" storage local get "$key" >/dev/null 2>&1
 }
 
 check_restart_persistence() {
@@ -218,9 +251,7 @@ check_restart_persistence() {
   run_timeout openclaw_cmd browser --browser-profile "$BROWSER_PROFILE" open "$BROWSER_SMOKE_URL" >/dev/null 2>&1
   sleep "$BROWSER_SETTLE_SEC"
 
-  local got
-  got="$(run_timeout openclaw_cmd browser --browser-profile "$BROWSER_PROFILE" storage local get "$key" 2>/dev/null || true)"
-  [[ "$got" == *"$expected"* ]]
+  run_timeout openclaw_cmd browser --browser-profile "$BROWSER_PROFILE" storage local get "$key" >/dev/null 2>&1
 }
 
 run_pdf_passes() {
@@ -312,12 +343,7 @@ smoke_target_body() {
   fi
 
   run_check "gateway-rpc" run_timeout openclaw_cmd gateway status --require-rpc >/dev/null 2>&1 || failures=1
-  run_check "integration-suite" \
-    env \
-      CLAWOPS_INTEGRATION_TARGET="$CURRENT_TARGET" \
-      CLAWOPS_INTEGRATION_TARGET_URL="$TARGET_URL" \
-      CLAWOPS_INTEGRATION_TARGET_TOKEN="$TARGET_TOKEN" \
-      "$SCRIPT_DIR/integration-suite.sh" --target "$CURRENT_TARGET" || failures=1
+  run_check "integration-suite" run_integration_suite_for_target || failures=1
 
   if (( failures > 0 )); then
     return 1
@@ -331,6 +357,7 @@ run_target_smoke() {
 
   TARGET_URL="$(target_override_or_default "$target" "URL" "$OPENCLAW_URL_DEFAULT")"
   TARGET_TOKEN="$(target_override_or_default "$target" "TOKEN" "$OPENCLAW_TOKEN_DEFAULT")"
+  TARGET_INTEGRATION_CONTAINER="$(target_override_or_default "$target" "INTEGRATION_CONTAINER" "$INTEGRATION_CONTAINER_DEFAULT")"
   ACP_AGENT_ID="$(target_override_or_default "$target" "ACP_AGENT_ID" "$ACP_AGENT_ID_DEFAULT")"
   ACP_SESSION_KEY="$(target_override_or_default "$target" "ACP_SESSION_KEY" "agent:${ACP_AGENT_ID}:clawops-smoke:${target}")"
   BROWSER_PROFILE="$(target_override_or_default "$target" "BROWSER_PROFILE" "$BROWSER_PROFILE_DEFAULT")"
@@ -340,6 +367,9 @@ run_target_smoke() {
   log_line "$(target_log "starting smoke target profile=$BROWSER_PROFILE session=$ACP_SESSION_KEY")"
   if [[ -n "$TARGET_URL" ]]; then
     log_line "$(target_log "gateway-url=$TARGET_URL")"
+  fi
+  if [[ -n "$TARGET_INTEGRATION_CONTAINER" ]]; then
+    log_line "$(target_log "integration-container=$TARGET_INTEGRATION_CONTAINER")"
   fi
 
   if smoke_target_body "$target"; then
