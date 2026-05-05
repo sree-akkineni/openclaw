@@ -101,6 +101,14 @@ target_log() {
 
 run_timeout() {
   if command -v timeout >/dev/null 2>&1; then
+    if [[ "$(type -t "${1:-}")" == "function" ]]; then
+      local fn="$1"
+      shift
+      export -f "$fn"
+      TARGET_URL="$TARGET_URL" TARGET_TOKEN="$TARGET_TOKEN" \
+        timeout "$SMOKE_TIMEOUT_SEC" bash -c "$fn \"\$@\"" bash "$@"
+      return $?
+    fi
     timeout "$SMOKE_TIMEOUT_SEC" "$@"
     return $?
   fi
@@ -149,11 +157,11 @@ openclaw_cmd() {
   local -a args=()
   if [[ -n "$TARGET_URL" ]]; then
     args+=(--url "$TARGET_URL")
+    if [[ -n "$TARGET_TOKEN" ]]; then
+      args+=(--token "$TARGET_TOKEN")
+    fi
   fi
-  if [[ -n "$TARGET_TOKEN" ]]; then
-    args+=(--token "$TARGET_TOKEN")
-  fi
-  openclaw "${args[@]}" "$@"
+  openclaw "$@" "${args[@]}"
 }
 
 run_integration_suite_for_target() {
