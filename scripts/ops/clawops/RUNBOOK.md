@@ -202,3 +202,17 @@ If enabling auto-promotion:
 - If production smoke fails after promote, rollback runs and promotion is paused via `promotion-paused` state file.
 - Keep rollback snapshot flow enabled.
 - Require operator digest review for each promote event.
+
+## Docker Image Upgrade Flow
+
+For compose-managed droplet agents, prefer image-tag rollout over `openclaw update` inside the container:
+
+```bash
+scripts/ops/clawops/docker-image-rollout.sh \
+  --remote sreeopsadmin@10.108.0.2 \
+  --version <version> \
+  --rollback-version <previous-version> \
+  --targets clawops,shibot,gumnut,remy
+```
+
+Current caveat: use clawops local smoke as the canary gate. The older multi-target URL mode can false-negative from container network hairpin timeouts. See `UPGRADE-NOTES-2026-05-06.md`.
