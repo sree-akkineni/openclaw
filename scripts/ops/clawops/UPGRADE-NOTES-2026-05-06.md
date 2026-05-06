@@ -43,7 +43,7 @@ npm view openclaw version dist-tags --json
 
 ```bash
 scripts/ops/clawops/docker-image-rollout.sh \
-  --remote sreeopsadmin@10.108.0.2 \
+  --remote openclaw-droplet \
   --version 2026.5.5 \
   --canary clawops \
   --targets clawops,shibot,gumnut,remy \
@@ -63,7 +63,7 @@ scripts/ops/clawops/docker-image-rollout.sh \
 
 ```bash
 scripts/ops/clawops/docker-image-rollout.sh \
-  --remote sreeopsadmin@10.108.0.2 \
+  --remote openclaw-droplet \
   --version 2026.5.5 \
   --rollback-version 2026.5.3-1 \
   --targets clawops,shibot,gumnut,remy
@@ -83,10 +83,12 @@ For any target:
 Example for clawops:
 
 ```bash
-ssh sreeopsadmin@10.108.0.2 'cd /opt/clawops && \
+ssh openclaw-droplet 'cd /opt/clawops && \
   sudo sed -i "s#^OPENCLAW_IMAGE=.*#OPENCLAW_IMAGE=ghcr.io/openclaw/openclaw:2026.5.3-1#" .env && \
   sudo docker compose up -d --force-recreate clawops-gateway'
 ```
+
+Use the `openclaw-droplet` SSH alias through Twingate. Raw Tailscale/private IPs should be treated as fallback/debug paths, not the default operator interface.
 
 ## Backups Created
 
