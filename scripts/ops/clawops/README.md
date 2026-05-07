@@ -38,7 +38,8 @@ For current-state handoff and parallel execution prompts, see `HANDOFF-2026-04-0
 - `stream-c/memory-pipeline.mjs`: local Stream C raw->summary->QMD compile/lint/query pipeline.
 - `RUNBOOK.md`: operational runbook for steady-state, canary, and incident handling.
 - `UPGRADE-NOTES-2026-05-06.md`: detailed notes from the 2026.5.5 Docker-image upgrade drill.
-- `CODEX-CLOUD-READY.md`: resume and readiness notes for Codex Cloud or another device.
+- `CODEX-CLOUD-READY.md`: Codex Cloud VM setup notes for mobile repo work; production deploys remain local over Twingate.
+- `codex-cloud-setup.sh`: fast cacheable Codex Cloud setup script for dependency installation.
 - `ROADMAP.md`: per-agent capability roadmap and cleanup priorities.
 - `docker-image-rollout.sh`: Docker image canary and rollout helper for compose-managed agents.
 - `baseline/integration-checks.txt`: template contract for integration check entries.
