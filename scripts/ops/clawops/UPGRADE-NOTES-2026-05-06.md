@@ -140,9 +140,53 @@ Evidence:
 | gumnut  | PASS   | container healthy, `OpenClaw 2026.5.5`, config valid, Duckbill pass      |
 | remy    | PASS   | container healthy, `OpenClaw 2026.5.5`, config valid, agent/browser pass |
 
-Advisory findings still open:
+Advisory findings from the first follow-up QA:
 
 - Local SSH alias `openclaw-droplet` is not configured on this workstation yet; direct `sreeopsadmin@10.108.0.2` worked.
 - Clawops reports `plugins.allow` empty and can auto-load discovered non-bundled plugin `acpx`.
 - Shibot config still references stale non-installed plugins: `whatsapp`, `lobster`, `memory-lancedb`, and `brave`.
 - Full clawops local smoke also passed once during this QA pass, but it is slow; keep it behind `--with-clawops-smoke` for routine sweeps.
+
+## Plugin Cleanup (2026-05-07 UTC)
+
+Completed the cleanup items above:
+
+- Added local SSH alias `openclaw-droplet` for `sreeopsadmin@10.108.0.2`.
+- Added explicit `plugins.allow` on clawops.
+- Added explicit `plugins.allow` on remy.
+- Removed stale Shibot plugin entries for `whatsapp`, `lobster`, `memory-lancedb`, and `brave`.
+- Removed Shibot's leftover stale `whatsapp` allowlist entry after validation surfaced it.
+
+Backups were created on the droplet before each remote config mutation under each deployment's `backups/config-cleanup-*` directory.
+
+Validation:
+
+```bash
+for c in clawops-gateway openclaw-docker-openclaw-gateway-1 gumnut-bot-gateway remy-bot-gateway; do
+  sudo docker exec -u root "$c" sh -lc 'openclaw config validate && openclaw plugins doctor'
+done
+```
+
+Result for all four containers: `Config valid` and `No plugin issues detected`.
+
+Post-cleanup QA:
+
+```bash
+scripts/ops/clawops/agent-container-qa.sh \
+  --remote openclaw-droplet \
+  --expected-version 2026.5.5 \
+  --targets clawops,shibot,gumnut,remy
+```
+
+Result: `QA complete PASS`.
+
+Shibot-only follow-up after removing the leftover allowlist entry:
+
+```bash
+scripts/ops/clawops/agent-container-qa.sh \
+  --remote openclaw-droplet \
+  --expected-version 2026.5.5 \
+  --targets shibot
+```
+
+Result: `QA complete PASS`.

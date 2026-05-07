@@ -41,6 +41,7 @@ For current-state handoff and parallel execution prompts, see `HANDOFF-2026-04-0
 - `CODEX-CLOUD-READY.md`: Codex Cloud VM setup notes for mobile repo work; production deploys remain local over Twingate.
 - `codex-cloud-setup.sh`: fast cacheable Codex Cloud setup script for dependency installation.
 - `ROADMAP.md`: per-agent capability roadmap and cleanup priorities.
+- `CAPABILITY-OPTIONS-2026-05-07.md`: capability shortlist for the next enablement discussion.
 - `docker-image-rollout.sh`: Docker image canary and rollout helper for compose-managed agents.
 - `agent-container-qa.sh`: post-upgrade QA harness that checks each agent from inside its own container.
 - `baseline/integration-checks.txt`: template contract for integration check entries.

@@ -6,7 +6,7 @@ Highest-value platform work:
 
 - Docker-native release canary and promotion automation using image tags.
 - Target-container smoke execution to avoid host-IP hairpin timeouts.
-- Explicit plugin allowlists per agent.
+- Explicit plugin allowlists per agent. Initial cleanup completed for clawops, shibot, gumnut, and remy on 2026-05-07.
 - Telegram response formatting policy: table-to-bullets, concise sections, and channel-specific Markdown escaping.
 - Memory architecture hardening: group vs DM boundaries, explicit carryover, Obsidian/QMD sync.
 - Browser profile lifecycle policy: per-agent profile names, restart persistence, cleanup cadence.
@@ -44,8 +44,8 @@ Keep enabled:
 
 Reassess:
 
-- Stale `whatsapp`, `lobster`, `memory-lancedb`, and `brave` plugin entries. Either install official external plugins or remove config entries.
 - Whether direct Notion/GitHub/Drive integrations should live in Shibot or be delegated to Codex/cloud workflows.
+- Whether to intentionally add `memory-lancedb`, `memory-wiki`, or another durable memory plugin after `ai-brain` integration boundaries are clear.
 
 Potential projects:
 
@@ -116,6 +116,6 @@ Current defaults that make sense:
 
 Defaults to change:
 
-- Broad plugin enablement on clawops/remy/shibot.
+- Broad plugin enablement on any agent when `plugins.allow` is absent.
 - Target smoke over host Tailscale IP from inside containers.
 - Treating health CLI event-loop warnings during heavy probes as a hard failure without functional corroboration.
