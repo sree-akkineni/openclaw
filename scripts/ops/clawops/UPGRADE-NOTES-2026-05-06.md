@@ -31,6 +31,17 @@ Observed false-negative failures:
 
 The local in-container smoke path on the same gateway passed and should be the current canary gate until target-mode transport is fixed.
 
+Use `agent-container-qa.sh` for repeatable post-upgrade QA without changing image tags:
+
+```bash
+scripts/ops/clawops/agent-container-qa.sh \
+  --remote openclaw-droplet \
+  --expected-version 2026.5.5 \
+  --targets clawops,shibot,gumnut,remy
+```
+
+Add `--with-clawops-smoke` for a full clawops local smoke rerun. Keep it off for quick post-upgrade sweeps because it is the slowest check group.
+
 ## Current Recommended Upgrade Gate
 
 1. Check latest version:
@@ -102,7 +113,36 @@ Each target rollout creates timestamped backups under the deployment directory:
 ## Follow-ups
 
 - Fix multi-target smoke transport so container-to-container checks do not depend on host Tailscale IP hairpinning.
-- Convert target-mode browser checks to execute inside the target container, or add per-target loopback URL semantics for container-local probes.
+- Keep expanding `agent-container-qa.sh` until it fully replaces the false-negative target URL smoke path for post-upgrade checks.
 - Update release watcher/canary automation to use Docker image tags for compose-managed deployments instead of `openclaw update` inside a running container.
 - Set explicit `plugins.allow` on clawops/remy/shibot. Gumnut already has a narrow allowlist and should be the model.
 - Clean Shibot stale plugin entries or intentionally install the external plugins now suggested by `2026.5.5` warnings.
+
+## Follow-up QA (2026-05-07 UTC)
+
+Standalone container-local QA harness added and validated:
+
+```bash
+scripts/ops/clawops/agent-container-qa.sh \
+  --remote sreeopsadmin@10.108.0.2 \
+  --expected-version 2026.5.5 \
+  --targets clawops,shibot,gumnut,remy
+```
+
+Result: `QA complete PASS`.
+
+Evidence:
+
+| Agent   | Result | Evidence                                                                 |
+| ------- | ------ | ------------------------------------------------------------------------ |
+| clawops | PASS   | container healthy, `OpenClaw 2026.5.5`, config valid, agent/browser pass |
+| shibot  | PASS   | container healthy, `OpenClaw 2026.5.5`, config valid, agent/browser pass |
+| gumnut  | PASS   | container healthy, `OpenClaw 2026.5.5`, config valid, Duckbill pass      |
+| remy    | PASS   | container healthy, `OpenClaw 2026.5.5`, config valid, agent/browser pass |
+
+Advisory findings still open:
+
+- Local SSH alias `openclaw-droplet` is not configured on this workstation yet; direct `sreeopsadmin@10.108.0.2` worked.
+- Clawops reports `plugins.allow` empty and can auto-load discovered non-bundled plugin `acpx`.
+- Shibot config still references stale non-installed plugins: `whatsapp`, `lobster`, `memory-lancedb`, and `brave`.
+- Full clawops local smoke also passed once during this QA pass, but it is slow; keep it behind `--with-clawops-smoke` for routine sweeps.

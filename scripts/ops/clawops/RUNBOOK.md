@@ -184,7 +184,18 @@ Cron session targeting (optional):
 
 ## Multi-container Browser/PDF Smoke Matrix
 
-Run one suite across local + container targets (configured via `CLAWOPS_TARGET_<NAME>_*` env keys):
+The legacy gateway-URL target matrix can false-negative from host-IP hairpin timeouts. Prefer container-local QA for deployed agents:
+
+```bash
+scripts/ops/clawops/agent-container-qa.sh \
+  --remote openclaw-droplet \
+  --expected-version <version> \
+  --targets clawops,shibot,gumnut,remy
+```
+
+Add `--with-clawops-smoke` when you need the full clawops browser/PDF/integration suite during the same run. The default sweep keeps this off so repeated post-upgrade checks do not stall on the heaviest path.
+
+Only use the older URL matrix when specifically validating gateway-to-gateway transport behavior. It is configured via `CLAWOPS_TARGET_<NAME>_*` env keys:
 
 ```bash
 sudo -n docker exec clawops-gateway sh -lc 'set -a; [ -f /opt/clawops/.env ] && . /opt/clawops/.env; set +a; CLAWOPS_SMOKE_TARGETS=clawops,remy,gumnut,shibot /opt/clawops/scripts/smoke-suite.sh'
@@ -216,3 +227,14 @@ scripts/ops/clawops/docker-image-rollout.sh \
 ```
 
 Use the `openclaw-droplet` SSH alias through Twingate. Current caveat: use clawops local smoke as the canary gate. The older multi-target URL mode can false-negative from container network hairpin timeouts. See `UPGRADE-NOTES-2026-05-06.md`.
+
+After rollout, rerun the standalone QA harness without changing images:
+
+```bash
+scripts/ops/clawops/agent-container-qa.sh \
+  --remote openclaw-droplet \
+  --expected-version <version> \
+  --targets clawops,shibot,gumnut,remy
+```
+
+For a full canary-grade post-rollout run, add `--with-clawops-smoke`.
