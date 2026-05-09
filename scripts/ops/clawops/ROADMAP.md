@@ -109,7 +109,7 @@ Potential projects:
 
 Current defaults that make sense:
 
-- Native `openai/gpt-5.4` primary with `openai/gpt-5.2` fallback for all four agents.
+- Native `openai/gpt-5.5` primary with `thinkingDefault: "low"` and `openai/gpt-5.4` fallback for all four agents.
 - Gumnut's narrow plugin allowlist model.
 - Docker image pinning instead of mutable in-container updates.
 - Canary on clawops before any other rollout.

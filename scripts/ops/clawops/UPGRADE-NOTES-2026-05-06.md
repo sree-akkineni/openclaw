@@ -190,3 +190,64 @@ scripts/ops/clawops/agent-container-qa.sh \
 ```
 
 Result: `QA complete PASS`.
+
+## Model Policy Update (2026-05-09 UTC)
+
+Updated all four deployed agents to use:
+
+- Primary model: `openai/gpt-5.5`
+- Default reasoning: `thinkingDefault: "low"`
+- Fallback model: `openai/gpt-5.4`
+
+Updated model references:
+
+- `agents.defaults.model.primary`
+- `agents.defaults.model.fallbacks`
+- `agents.defaults.thinkingDefault`
+- `agents.defaults.models` aliases (`gpt55`, `gpt54`)
+- `agents.defaults.heartbeat.model` where it was using `openai/gpt-5.4`
+- `agents.defaults.subagents.model` where it was using `openai/gpt-5.4`
+- `agents.defaults.pdfModel.primary` where present and using `openai/gpt-5.4`
+- local `models.providers.openai.models` entries so `2026.5.5` recognizes `openai/gpt-5.5`
+
+Backups were created under each deployment's `backups/model-policy-*` directory before mutation.
+
+Validation:
+
+```bash
+for c in clawops-gateway openclaw-docker-openclaw-gateway-1 gumnut-bot-gateway remy-bot-gateway; do
+  sudo docker exec -u root "$c" sh -lc \
+    'openclaw config validate && openclaw plugins doctor && openclaw models list | grep -E "openai/gpt-5\\.5|openai/gpt-5\\.4"'
+done
+```
+
+Result for all four containers:
+
+- `openai/gpt-5.5` listed as `default,configured,alias:gpt55`
+- `openai/gpt-5.4` listed as `fallback#1,configured,alias:gpt54`
+- config validation passed
+- plugin doctor passed, after the Shibot WhatsApp cleanup noted below
+
+Post-update QA:
+
+```bash
+scripts/ops/clawops/agent-container-qa.sh \
+  --remote openclaw-droplet \
+  --expected-version 2026.5.5 \
+  --targets clawops,shibot,gumnut,remy
+```
+
+Result: `QA complete PASS`.
+
+Shibot note: disabling stale `channels.whatsapp.enabled` was required because startup auto-added `whatsapp` back into `plugins.allow`. WhatsApp remains disabled until we intentionally install/configure the WhatsApp plugin path.
+
+Shibot-only follow-up after disabling WhatsApp:
+
+```bash
+scripts/ops/clawops/agent-container-qa.sh \
+  --remote openclaw-droplet \
+  --expected-version 2026.5.5 \
+  --targets shibot
+```
+
+Result: `QA complete PASS`.
