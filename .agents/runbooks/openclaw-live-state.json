@@ -1,0 +1,175 @@
+{
+  "verifiedAt": "2026-06-28",
+  "sshTarget": "sreeopsadmin@10.108.0.2",
+  "publicFallback": "sreeopsadmin@157.245.220.134",
+  "runtimeVersion": "",
+  "qmdVersion": "2.0.1",
+  "obsidianVaultMounted": false,
+  "sharedManagedSkills": [
+    "agent-browser"
+  ],
+  "surfaces": [
+    {
+      "id": "clawops",
+      "container": "clawops-gateway",
+      "configPath": "/opt/clawops/config/openclaw.json",
+      "expectedImage": "ghcr.io/openclaw/openclaw:2026.6.9",
+      "runtimeVersion": "2026.6.9",
+      "toolSmokes": [
+        "web_search",
+        "x_search"
+      ],
+      "browserSmoke": false,
+      "browser": {
+        "expectedEnabled": true,
+        "requireExplicitEnabled": true
+      },
+      "genericExecApprovalForwarding": {
+        "expectedEnabled": false
+      },
+      "telegramExecApprovals": {
+        "required": true,
+        "target": "both",
+        "approvers": [
+          "5944352446"
+        ]
+      },
+      "telegramElevated": {
+        "required": true,
+        "expectedEnabled": true,
+        "allowFrom": [
+          "5944352446"
+        ]
+      },
+      "memory": {
+        "backend": "qmd",
+        "command": "/root/.openclaw/qmd-runtime/node_modules/.bin/qmd",
+        "defaultWorkspaceOnly": true,
+        "cliVerified": true,
+        "workspaceHasMemoryFiles": false
+      },
+      "approvalTextFallback": {
+        "required": false
+      }
+    },
+    {
+      "id": "remy",
+      "container": "remy-bot-gateway",
+      "configPath": "/opt/remy-bot/config/openclaw.json",
+      "expectedImage": "ghcr.io/openclaw/openclaw:2026.6.9",
+      "runtimeVersion": "2026.6.9",
+      "toolSmokes": [
+        "web_search",
+        "x_search"
+      ],
+      "browserSmoke": false,
+      "browser": {
+        "expectedEnabled": true,
+        "requireExplicitEnabled": true
+      },
+      "genericExecApprovalForwarding": {
+        "expectedEnabled": false
+      },
+      "telegramExecApprovals": {
+        "required": true,
+        "target": "both",
+        "approvers": [
+          "5944352446"
+        ]
+      },
+      "memory": {
+        "backend": "qmd",
+        "command": "/root/.openclaw/qmd-runtime/node_modules/.bin/qmd",
+        "defaultWorkspaceOnly": true,
+        "cliVerified": true,
+        "workspaceHasMemoryFiles": true
+      },
+      "approvalTextFallback": {
+        "required": false
+      }
+    },
+    {
+      "id": "gumnut",
+      "container": "gumnut-bot-gateway",
+      "configPath": "/opt/gumnut-bot/config/openclaw.json",
+      "expectedImage": "ghcr.io/openclaw/openclaw:2026.6.9",
+      "runtimeVersion": "2026.6.9",
+      "toolSmokes": [
+        "web_search",
+        "x_search"
+      ],
+      "browserSmoke": false,
+      "browser": {
+        "expectedEnabled": true,
+        "requireExplicitEnabled": true
+      },
+      "genericExecApprovalForwarding": {
+        "expectedEnabled": false
+      },
+      "telegramExecApprovals": {
+        "required": true,
+        "target": "channel",
+        "approvers": [
+          "5944352446"
+        ]
+      },
+      "memory": {
+        "backend": "qmd",
+        "command": "/root/.openclaw/qmd-runtime/node_modules/.bin/qmd",
+        "defaultWorkspaceOnly": true,
+        "httpInvokeVerified": true,
+        "workspaceHasMemoryFiles": true
+      },
+      "approvalTextFallback": {
+        "required": false
+      },
+      "duckbillMcp": {
+        "configured": true,
+        "endpoint": "https://mcp.duckbill.ai/mcp",
+        "transport": "http",
+        "auth": "oauth_sso_required",
+        "claudeCliMcpConfigPath": "/home/node/.claude/duckbill.json",
+        "claudeAuthLoggedIn": false
+      }
+    },
+    {
+      "id": "main",
+      "container": "openclaw-docker-openclaw-gateway-1",
+      "configPath": "/opt/openclaw-docker/config/openclaw.json",
+      "expectedImage": "ghcr.io/openclaw/openclaw:2026.6.9",
+      "runtimeVersion": "2026.6.9",
+      "toolSmokes": [
+        "web_search",
+        "x_search",
+        "browser"
+      ],
+      "browserSmoke": true,
+      "browser": {
+        "expectedEnabled": true,
+        "requireExplicitEnabled": true,
+        "expectedExecutablePath": "/home/node/.cache/ms-playwright/chromium_headless_shell-1208/chrome-headless-shell-linux64/chrome-headless-shell"
+      },
+      "genericExecApprovalForwarding": {
+        "expectedEnabled": false
+      },
+      "telegramExecApprovals": {
+        "required": true,
+        "target": "both",
+        "approvers": [
+          "1944676289",
+          "5944352446"
+        ]
+      },
+      "memory": {
+        "backend": "qmd",
+        "command": "/home/node/.openclaw/qmd-runtime/node_modules/.bin/qmd",
+        "defaultWorkspaceOnly": true,
+        "httpInvokeVerified": true,
+        "workspaceHasMemoryFiles": true
+      },
+      "approvalTextFallback": {
+        "required": false
+      }
+    }
+  ]
+}

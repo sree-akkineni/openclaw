@@ -1,0 +1,16 @@
+[Unit]
+Description=OpenClaw droplet health monitor
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/openclaw-droplet-health-monitor.sh
+Environment=LOOKBACK_MINUTES=15
+Environment=WARN_AVAILABLE_MEM_MB=1024
+Environment=WARN_SWAP_USED_MB=256
+Environment=WARN_ROOT_DISK_PCT=90
+Environment=WARN_CONTAINER_MEM_PCT=75
+
+[Install]
+WantedBy=multi-user.target
