@@ -111,7 +111,8 @@ split_targets() {
 }
 
 backup_target() {
-  local target="$1" dir="${DIRS[$target]}" stamp backup_dir
+  local target="$1" dir stamp backup_dir
+  dir="${DIRS[$target]}"
   stamp="$(date -u +%Y%m%dT%H%M%SZ)"
   backup_dir="$dir/backups/upgrade-$stamp"
   sudo mkdir -p "$backup_dir"
@@ -123,7 +124,8 @@ backup_target() {
 }
 
 set_image() {
-  local target="$1" dir="${DIRS[$target]}" stamp
+  local target="$1" dir stamp
+  dir="${DIRS[$target]}"
   stamp="$(date -u +%Y%m%dT%H%M%SZ)"
   if [[ -f "$dir/.env" ]] && sudo grep -q '^OPENCLAW_IMAGE=' "$dir/.env"; then
     sudo sed -i.bak-upgrade-$stamp "s#^OPENCLAW_IMAGE=.*#OPENCLAW_IMAGE=$IMAGE#" "$dir/.env"
@@ -144,7 +146,9 @@ wait_healthy() {
 }
 
 upgrade_target() {
-  local target="$1" dir="${DIRS[$target]}" container="${CONTAINERS[$target]}"
+  local target="$1" dir container
+  dir="${DIRS[$target]}"
+  container="${CONTAINERS[$target]}"
   if [[ -z "${dir:-}" || -z "${container:-}" ]]; then
     log "ERROR unknown target: $target"
     return 2
@@ -157,7 +161,8 @@ upgrade_target() {
 }
 
 check_target_common() {
-  local target="$1" container="${CONTAINERS[$target]}"
+  local target="$1" container
+  container="${CONTAINERS[$target]}"
   log "check common target=$target"
   sudo docker exec -u root "$container" sh -lc 'openclaw --version; openclaw config validate; openclaw plugins doctor 2>&1 || true; himalaya --version 2>/dev/null | head -1 || true'
   sudo docker exec -u root "$container" sh -lc "openclaw agent --agent main --message 'Reply exactly STATUS=ok AGENT=$target VERSION=$TARGET_VERSION' --thinking low"

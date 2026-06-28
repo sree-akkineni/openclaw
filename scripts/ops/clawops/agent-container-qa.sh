@@ -111,7 +111,7 @@ check_common() {
   sudo docker exec -u root "$container" sh -lc 'openclaw plugins doctor 2>&1 || true'
   sudo docker exec -u root "$container" sh -lc 'command -v himalaya >/dev/null && himalaya --version 2>/dev/null | head -1 || true'
   sudo docker exec -u root "$container" sh -lc "openclaw agent --agent main --message 'Reply exactly STATUS=ok AGENT=$target' --thinking low | grep -q 'STATUS=ok'"
-  sudo docker exec -u root "$container" sh -lc 'timeout 120 openclaw browser open https://example.com >/tmp/browser-open.out && timeout 120 openclaw browser snapshot >/tmp/browser-snapshot.out && test -s /tmp/browser-snapshot.out'
+  sudo docker exec -u root "$container" sh -lc 'openclaw browser stop >/dev/null 2>&1 || true; trap "openclaw browser stop >/dev/null 2>&1 || true" EXIT; timeout 120 openclaw browser open https://example.com >/tmp/browser-open.out && timeout 120 openclaw browser snapshot >/tmp/browser-snapshot.out && test -s /tmp/browser-snapshot.out'
 }
 
 check_clawops() {
